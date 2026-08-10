@@ -1,0 +1,503 @@
+/* ==========================================================================
+   B2B Wholesale Computer & IT Equipment Distributor - Core Stylesheetheet
+   ========================================================================== */
+
+:root {
+    --b2b-primary: #0f172a;       /* Deep Slate Navy */
+    --b2b-primary-hover: #1e293b;
+    --b2b-accent: #059669;        /* B2B Emerald Green */
+    --b2b-accent-hover: #047857;
+    --b2b-cyan: #0284c7;          /* Tech Cyan */
+    --b2b-light-bg: #f8fafc;
+    --b2b-card-bg: #ffffff;
+    --b2b-border: #e2e8f0;
+    --b2b-text-dark: #0f172a;
+    --b2b-text-muted: #64748b;
+    --b2b-shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+    --b2b-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+    --b2b-shadow-lg: 0 10px 25px rgba(15, 23, 42, 0.12);
+    --b2b-radius: 10px;
+    --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--b2b-light-bg);
+    color: var(--b2b-text-dark);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--b2b-primary);
+}
+
+a {
+    color: var(--b2b-cyan);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+a:hover {
+    color: #0369a1;
+}
+
+/* ==========================================
+   Header & Navigation
+   ========================================== */
+
+.b2b-topbar {
+    background-color: var(--b2b-primary);
+    color: #94a3b8;
+    font-size: 0.85rem;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.b2b-topbar a {
+    color: #cbd5e1;
+}
+
+.b2b-topbar a:hover {
+    color: #ffffff;
+}
+
+.b2b-navbar {
+    background-color: #ffffff;
+    box-shadow: var(--b2b-shadow-sm);
+    padding: 12px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+
+.b2b-logo {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--b2b-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.b2b-logo i {
+    color: var(--b2b-accent);
+}
+
+.b2b-search-input {
+    border-radius: 30px 0 0 30px;
+    border: 1px solid #cbd5e1;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+}
+
+.b2b-search-input:focus {
+    border-color: var(--b2b-accent);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+}
+
+.b2b-search-btn {
+    border-radius: 0 30px 30px 0;
+    background-color: var(--b2b-primary);
+    color: #ffffff;
+    border: none;
+    padding: 0 20px;
+}
+
+.b2b-search-btn:hover {
+    background-color: var(--b2b-primary-hover);
+}
+
+.b2b-nav-badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background-color: var(--b2b-accent);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==========================================
+   Hero Section
+   ========================================== */
+
+.b2b-hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #064e3b 100%);
+    color: #ffffff;
+    padding: 70px 0;
+    border-radius: 0 0 24px 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.b2b-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(0,0,0,0) 70%);
+    pointer-events: none;
+}
+
+.b2b-hero-badge {
+    display: inline-block;
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(52, 211, 153, 0.3);
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.b2b-hero h1 {
+    color: #ffffff;
+    font-size: 2.8rem;
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+
+.b2b-hero p {
+    color: #cbd5e1;
+    font-size: 1.15rem;
+    max-width: 600px;
+    margin-bottom: 30px;
+}
+
+/* ==========================================
+   Product Cards & Grid
+   ========================================== */
+
+.b2b-product-card {
+    background: #ffffff;
+    border: 1px solid var(--b2b-border);
+    border-radius: var(--b2b-radius);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.b2b-product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--b2b-shadow-lg);
+    border-color: #cbd5e1;
+}
+
+.b2b-product-img-wrapper {
+    position: relative;
+    padding-top: 75%; /* 4:3 Aspect Ratio */
+    background: #f1f5f9;
+    overflow: hidden;
+}
+
+.b2b-product-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.b2b-product-card:hover .b2b-product-img {
+    transform: scale(1.05);
+}
+
+.b2b-moq-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: var(--b2b-primary);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.b2b-tier-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--b2b-accent);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.b2b-product-body {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.b2b-product-brand {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--b2b-text-muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.b2b-product-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--b2b-primary);
+    line-height: 1.4;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.b2b-product-sku {
+    font-size: 0.75rem;
+    color: var(--b2b-text-muted);
+    margin-bottom: 12px;
+}
+
+.b2b-price-box {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px dashed var(--b2b-border);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.b2b-price-from {
+    font-size: 0.75rem;
+    color: var(--b2b-text-muted);
+}
+
+.b2b-price-val {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--b2b-accent);
+}
+
+/* ==========================================
+   Wholesale Price Matrix Table
+   ========================================== */
+
+.b2b-pricing-table {
+    background: #f8fafc;
+    border: 1px solid var(--b2b-border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+.b2b-pricing-table table {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.b2b-pricing-table th {
+    background: #e2e8f0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--b2b-primary);
+    padding: 10px 14px;
+}
+
+.b2b-pricing-table td {
+    padding: 12px 14px;
+    font-size: 0.9rem;
+}
+
+.b2b-pricing-table tr.active-tier {
+    background-color: #d1fae5 !important;
+    font-weight: 700;
+}
+
+.b2b-pricing-table tr.active-tier td {
+    color: #065f46;
+}
+
+/* ==========================================
+   Order Tracking Timeline
+   ========================================== */
+
+.b2b-timeline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    margin: 40px 0;
+}
+
+.b2b-timeline::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    right: 40px;
+    height: 4px;
+    background: #e2e8f0;
+    z-index: 1;
+}
+
+.b2b-timeline-progress {
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    height: 4px;
+    background: var(--b2b-accent);
+    z-index: 2;
+    transition: width 0.5s ease;
+}
+
+.b2b-timeline-step {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    background: #ffffff;
+    padding: 0 10px;
+}
+
+.b2b-step-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.b2b-timeline-step.completed .b2b-step-icon {
+    background: var(--b2b-accent);
+    color: #ffffff;
+}
+
+.b2b-timeline-step.active .b2b-step-icon {
+    background: var(--b2b-cyan);
+    color: #ffffff;
+    box-shadow: 0 0 0 5px rgba(2, 132, 199, 0.2);
+}
+
+.b2b-step-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--b2b-text-dark);
+}
+
+/* ==========================================
+   Category & Brand Grids
+   ========================================== */
+
+.b2b-cat-card {
+    background: #ffffff;
+    border: 1px solid var(--b2b-border);
+    border-radius: var(--b2b-radius);
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.b2b-cat-card:hover {
+    border-color: var(--b2b-accent);
+    box-shadow: var(--b2b-shadow-md);
+    transform: translateY(-3px);
+}
+
+.b2b-cat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: rgba(5, 150, 105, 0.1);
+    color: var(--b2b-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin: 0 auto 14px;
+}
+
+.b2b-brand-box {
+    background: #ffffff;
+    border: 1px solid var(--b2b-border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--b2b-primary);
+    transition: all 0.2s ease;
+}
+
+.b2b-brand-box:hover {
+    border-color: var(--b2b-cyan);
+    color: var(--b2b-cyan);
+}
+
+/* ==========================================
+   Toast & Alert Badges
+   ========================================== */
+
+.toast-container {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 1100;
+}
+
+.b2b-btn-primary {
+    background-color: var(--b2b-primary);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    padding: 10px 22px;
+    border-radius: 8px;
+}
+
+.b2b-btn-primary:hover {
+    background-color: var(--b2b-primary-hover);
+    color: #ffffff;
+}
+
+.b2b-btn-accent {
+    background-color: var(--b2b-accent);
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    padding: 10px 22px;
+    border-radius: 8px;
+}
+
+.b2b-btn-accent:hover {
+    background-color: var(--b2b-accent-hover);
+    color: #ffffff;
+}
