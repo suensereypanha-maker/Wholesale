@@ -41,11 +41,16 @@
 
             <!-- Global Product Search Bar -->
             <div class="col-12 col-lg-5 my-2 my-lg-0 order-3 order-lg-2">
-                <form action="{{ route('frontend.products.index') }}" method="GET" class="d-flex">
-                    <input type="text" name="search" class="form-control b2b-search-input" placeholder="Search product name, SKU (e.g. DELL-L5440), brand, or category..." value="{{ request('search') }}">
-                    <button type="submit" class="btn b2b-search-btn">
-                        <i class="fas fa-search me-1"></i> Search
-                    </button>
+                <form action="{{ route('frontend.products.index') }}" method="GET" class="b2b-search-form">
+                    <div class="input-group b2b-search-group">
+                        <span class="input-group-text b2b-search-icon">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" name="search" class="form-control b2b-search-input" placeholder="Search product name, SKU (e.g. DELL-L5440), brand..." value="{{ request('search') }}" autocomplete="off">
+                        <button type="submit" class="btn b2b-search-btn">
+                            Search
+                        </button>
+                    </div>
                 </form>
             </div>
 

@@ -37,20 +37,20 @@ class FrontendData
     public static function brands()
     {
         return [
-            ['name' => 'Dell', 'slug' => 'dell', 'logo' => 'DELL', 'count' => 12],
-            ['name' => 'HP', 'slug' => 'hp', 'logo' => 'HP', 'count' => 10],
-            ['name' => 'Lenovo', 'slug' => 'lenovo', 'logo' => 'LENOVO', 'count' => 9],
-            ['name' => 'ASUS', 'slug' => 'asus', 'logo' => 'ASUS', 'count' => 8],
-            ['name' => 'Acer', 'slug' => 'acer', 'logo' => 'ACER', 'count' => 6],
-            ['name' => 'MSI', 'slug' => 'msi', 'logo' => 'MSI', 'count' => 5],
-            ['name' => 'Intel', 'slug' => 'intel', 'logo' => 'INTEL', 'count' => 11],
-            ['name' => 'AMD', 'slug' => 'amd', 'logo' => 'AMD', 'count' => 8],
-            ['name' => 'NVIDIA', 'slug' => 'nvidia', 'logo' => 'NVIDIA', 'count' => 7],
-            ['name' => 'Samsung', 'slug' => 'samsung', 'logo' => 'SAMSUNG', 'count' => 9],
-            ['name' => 'Logitech', 'slug' => 'logitech', 'logo' => 'LOGITECH', 'count' => 7],
-            ['name' => 'TP-Link', 'slug' => 'tp-link', 'logo' => 'TP-LINK', 'count' => 6],
-            ['name' => 'Canon', 'slug' => 'canon', 'logo' => 'CANON', 'count' => 4],
-            ['name' => 'Epson', 'slug' => 'epson', 'logo' => 'EPSON', 'count' => 4],
+            ['name' => 'Dell', 'slug' => 'dell', 'logo' => 'DELL', 'count' => 12, 'icon' => 'fas fa-laptop', 'tagline' => 'Enterprise Laptops & Servers', 'accent' => '#007db8'],
+            ['name' => 'HP', 'slug' => 'hp', 'logo' => 'HP', 'count' => 10, 'icon' => 'fas fa-desktop', 'tagline' => 'EliteBook & ProLiant', 'accent' => '#0096d6'],
+            ['name' => 'Lenovo', 'slug' => 'lenovo', 'logo' => 'LENOVO', 'count' => 9, 'icon' => 'fas fa-laptop-code', 'tagline' => 'ThinkPad & Workstations', 'accent' => '#e2231a'],
+            ['name' => 'ASUS', 'slug' => 'asus', 'logo' => 'ASUS', 'count' => 8, 'icon' => 'fas fa-microchip', 'tagline' => 'ExpertBook & Systems', 'accent' => '#00539b'],
+            ['name' => 'Acer', 'slug' => 'acer', 'logo' => 'ACER', 'count' => 6, 'icon' => 'fas fa-laptop-house', 'tagline' => 'TravelMate Series', 'accent' => '#83b81a'],
+            ['name' => 'MSI', 'slug' => 'msi', 'logo' => 'MSI', 'count' => 5, 'icon' => 'fas fa-gamepad', 'tagline' => 'Pro Desktops & GPUs', 'accent' => '#ff0000'],
+            ['name' => 'Intel', 'slug' => 'intel', 'logo' => 'INTEL', 'count' => 11, 'icon' => 'fas fa-microchip', 'tagline' => 'Xeon & Core CPUs', 'accent' => '#0068b5'],
+            ['name' => 'AMD', 'slug' => 'amd', 'logo' => 'AMD', 'count' => 8, 'icon' => 'fas fa-server', 'tagline' => 'EPYC & Ryzen CPUs', 'accent' => '#ed1c24'],
+            ['name' => 'NVIDIA', 'slug' => 'nvidia', 'logo' => 'NVIDIA', 'count' => 7, 'icon' => 'fas fa-memory', 'tagline' => 'RTX Workstation GPUs', 'accent' => '#76b900'],
+            ['name' => 'Samsung', 'slug' => 'samsung', 'logo' => 'SAMSUNG', 'count' => 9, 'icon' => 'fas fa-hdd', 'tagline' => 'NVMe SSDs & RAM', 'accent' => '#1428a0'],
+            ['name' => 'Logitech', 'slug' => 'logitech', 'logo' => 'LOGITECH', 'count' => 7, 'icon' => 'fas fa-keyboard', 'tagline' => 'Business Peripherals', 'accent' => '#00b8fc'],
+            ['name' => 'TP-Link', 'slug' => 'tp-link', 'logo' => 'TP-LINK', 'count' => 6, 'icon' => 'fas fa-wifi', 'tagline' => 'Omada Networking', 'accent' => '#4ac4cf'],
+            ['name' => 'Canon', 'slug' => 'canon', 'logo' => 'CANON', 'count' => 4, 'icon' => 'fas fa-print', 'tagline' => 'Commercial Printers', 'accent' => '#cc0000'],
+            ['name' => 'Epson', 'slug' => 'epson', 'logo' => 'EPSON', 'count' => 4, 'icon' => 'fas fa-copy', 'tagline' => 'WorkForce Scanners', 'accent' => '#003399'],
         ];
     }
 

@@ -93,9 +93,15 @@ class ProductController extends Controller
 
         $allProducts = collect(FrontendData::products());
         $relatedProducts = $allProducts->where('category_slug', $product['category_slug'])
-            ->where('id', '!=', $product['id'])
-            ->take(4)
-            ->values();
+            ->where('id', '!=', $product['id']);
+
+        if ($relatedProducts->count() < 6) {
+            $fallback = $allProducts->where('id', '!=', $product['id'])
+                ->reject(fn($p) => $relatedProducts->contains('id', $p['id']));
+            $relatedProducts = $relatedProducts->concat($fallback);
+        }
+
+        $relatedProducts = $relatedProducts->take(8)->values();
 
         return view('frontend.products.show', compact('product', 'relatedProducts'));
     }

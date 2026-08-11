@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\AdminMenu;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class AdminMenuSeeder extends Seeder
 {
@@ -12,6 +13,11 @@ class AdminMenuSeeder extends Seeder
      */
     public function run(): void
     {
+        // Truncate existing menu items for clean re-seeding
+        Schema::disableForeignKeyConstraints();
+        AdminMenu::truncate();
+        Schema::enableForeignKeyConstraints();
+
         $menus = [
             // Overview Section
             [
@@ -42,11 +48,27 @@ class AdminMenuSeeder extends Seeder
             ],
             [
                 'section'     => 'B2B Commerce & Sales',
+                'title'       => 'Order & Sale',
+                'icon'        => 'fas fa-cart-shopping',
+                'permission'  => 'manage_orders',
+                'order'       => 4,
+                'children'    => [
+                    [
+                        'title'      => 'Customer Order',
+                        'icon'       => 'fas fa-cart-shopping',
+                        'route'      => 'admin.orders.index',
+                        'permission' => 'manage_orders',
+                        'order'      => 1,
+                    ],
+                ],
+            ],
+            [
+                'section'     => 'B2B Commerce & Sales',
                 'title'       => 'Quotes & Inquiries',
                 'icon'        => 'fas fa-handshake-angle',
                 'url'         => '#',
                 'permission'  => 'manage_orders',
-                'order'       => 4,
+                'order'       => 5,
             ],
             [
                 'section'    => 'B2B Commerce & Sales',
@@ -54,7 +76,7 @@ class AdminMenuSeeder extends Seeder
                 'icon'       => 'fas fa-receipt',
                 'url'        => '#',
                 'permission' => 'manage_orders',
-                'order'      => 5,
+                'order'      => 6,
             ],
 
             // Wholesale Catalog Section
@@ -64,7 +86,7 @@ class AdminMenuSeeder extends Seeder
                 'icon'       => 'fas fa-box-archive',
                 'route'      => 'admin.stocks.index',
                 'permission' => 'manage_products',
-                'order'      => 6,
+                'order'      => 7,
             ],
             [
                 'section'    => 'Wholesale Catalog',
@@ -72,7 +94,7 @@ class AdminMenuSeeder extends Seeder
                 'icon'       => 'fas fa-layer-group',
                 'route'      => 'admin.categories.index',
                 'permission' => '',
-                'order'      => 7,
+                'order'      => 8,
             ],
             [
                 'section'    => 'Wholesale Catalog',
@@ -80,7 +102,7 @@ class AdminMenuSeeder extends Seeder
                 'icon'       => 'fas fa-tags',
                 'url'        => '#',
                 'permission' => 'manage_products',
-                'order'      => 8,
+                'order'      => 9,
             ],
 
             // Client Accounts Section
@@ -90,7 +112,7 @@ class AdminMenuSeeder extends Seeder
                 'icon'       => 'fas fa-users-gear',
                 'url'        => '#',
                 'permission' => 'manage_users',
-                'order'      => 8,
+                'order'      => 10,
             ],
             [
                 'section'     => 'Client Accounts',
@@ -98,7 +120,7 @@ class AdminMenuSeeder extends Seeder
                 'icon'        => 'fas fa-user-check',
                 'url'         => '#',
                 'permission'  => 'manage_users',
-                'order'       => 9,
+                'order'       => 11,
             ],
             [
                 'section'    => 'Client Accounts',
@@ -106,7 +128,7 @@ class AdminMenuSeeder extends Seeder
                 'icon'       => 'fas fa-credit-card',
                 'url'        => '#',
                 'permission' => 'manage_users',
-                'order'      => 10,
+                'order'      => 12,
             ],
 
             // Inventory & Logistics Section (with Children Submenu)
@@ -115,7 +137,7 @@ class AdminMenuSeeder extends Seeder
                 'title'       => 'Inventory',
                 'icon'        => 'fas fa-boxes-stacked',
                 'permission'  => 'manage_products',
-                'order'       => 11,
+                'order'       => 13,
                 'children'    => [
                     [
                         'title' => 'Stock In',
@@ -147,25 +169,22 @@ class AdminMenuSeeder extends Seeder
                 'section' => 'People',
                 'title'   => 'People',
                 'icon'    => 'fas fa-users',
-                'order'   => 12,
-
+                'order'   => 14,
                 'children' => [
-
-                                [
-                                    'title'      => 'Suppliers',
-                                    'icon'       => 'fas fa-truck-field',
-                                    'route'      => 'admin.suppliers.index',
-                                    'permission' => '',
-                                    'order'      => 1,
-                                ],
-
-                                [
-                                    'title'      => 'Customers',
-                                    'icon'       => 'fas fa-user',
-                                    'route'      => 'admin.customers.index',
-                                    'permission' => '',
-                                    'order'      => 2,
-                                ],
+                    [
+                        'title'      => 'Suppliers',
+                        'icon'       => 'fas fa-truck-field',
+                        'route'      => 'admin.suppliers.index',
+                        'permission' => '',
+                        'order'      => 1,
+                    ],
+                    [
+                        'title'      => 'Customers',
+                        'icon'       => 'fas fa-user',
+                        'route'      => 'admin.customers.index',
+                        'permission' => '',
+                        'order'      => 2,
+                    ],
                 ],
             ],
 
@@ -174,7 +193,7 @@ class AdminMenuSeeder extends Seeder
                 'section'     => 'Settings',
                 'title'       => 'Settings',
                 'icon'        => 'fas fa-gear',
-                'order'       => 13,
+                'order'       => 15,
                 'children'    => [
                     [
                         'title'      => 'Users',
@@ -199,33 +218,24 @@ class AdminMenuSeeder extends Seeder
                     ],
                 ]
             ],
-            
         ];
 
         foreach ($menus as $menuData) {
             $children = $menuData['children'] ?? [];
             unset($menuData['children']);
 
-            $menu = AdminMenu::updateOrCreate(
-                [
-                    'section' => $menuData['section'],
-                    'title'   => $menuData['title'],
-                    'parent_id' => null,
-                ],
-                $menuData
-            );
+            $menu = AdminMenu::create(array_merge([
+                'is_active' => true,
+                'parent_id' => null,
+            ], $menuData));
 
             foreach ($children as $childData) {
-                AdminMenu::updateOrCreate(
-                    [
-                        'parent_id' => $menu->id,
-                        'title'     => $childData['title'],
-                    ],
-                    array_merge([
-                        'route' => null,
-                        'url'   => null,
-                    ], $childData, ['parent_id' => $menu->id])
-                );
+                AdminMenu::create(array_merge([
+                    'is_active' => true,
+                    'parent_id' => $menu->id,
+                    'route'     => null,
+                    'url'       => null,
+                ], $childData));
             }
         }
     }

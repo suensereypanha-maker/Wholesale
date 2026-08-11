@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\CustomersController;
 use App\Http\Controllers\Admin\CompaniesController;
 use App\Http\Controllers\Admin\CompanyDetailsController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +45,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::resource('orders', OrderController::class);
     Route::post('users/{user}/approve', [UserController::class, 'approve'])->name('users.approve');
     Route::post('users/{user}/reject', [UserController::class, 'reject'])->name('users.reject');
     Route::resource('users', UserController::class);

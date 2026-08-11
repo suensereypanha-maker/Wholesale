@@ -151,19 +151,29 @@
     </section>
 
     <!-- 5. Best Sellers -->
-    <section class="mb-5">
+    <section class="mb-5 b2b-slider-container">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
                 <span class="text-uppercase text-warning font-weight-800 fs-7 tracking-wider">Top Procurement Choice</span>
                 <h2 class="h3 font-weight-800 mb-0">Best Selling Business Equipment</h2>
             </div>
-            <a href="{{ route('frontend.products.index') }}" class="btn btn-link text-emerald font-weight-700 text-decoration-none">
-                Browse All Best Sellers <i class="fas fa-arrow-right ms-1"></i>
-            </a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ route('frontend.products.index') }}" class="btn btn-link text-emerald font-weight-700 text-decoration-none d-none d-md-inline-block">
+                    Browse All Best Sellers <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+                <div class="b2b-slider-controls">
+                    <button type="button" class="b2b-slider-btn b2b-slider-prev" aria-label="Previous Best Sellers" title="Previous">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button type="button" class="b2b-slider-btn b2b-slider-next" aria-label="Next Best Sellers" title="Next">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="row g-4">
+        <div class="b2b-slider-track">
             @foreach($bestSellers as $product)
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="b2b-slider-item">
                     <x-frontend.product-card :product="$product" />
                 </div>
             @endforeach
@@ -173,12 +183,13 @@
     <!-- 6. Popular Brands -->
     <section class="mb-5">
         <div class="text-center mb-4">
-            <span class="text-uppercase text-secondary font-weight-800 fs-7 tracking-wider">Official Manufacturers</span>
-            <h2 class="h3 font-weight-800">Authorized Brand Partners</h2>
+            <span class="text-uppercase text-emerald font-weight-800 fs-7 tracking-wider" style="color: var(--b2b-accent);">Official Direct Manufacturers</span>
+            <h2 class="h3 font-weight-800 mb-1">Authorized Brand Partners</h2>
+            <p class="text-muted fs-7 mb-0">Direct procurement & enterprise warranty fulfilled through official brand channels</p>
         </div>
-        <div class="row g-3">
+        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-7 g-3">
             @foreach($brands as $b)
-                <div class="col-4 col-sm-3 col-md-2">
+                <div class="col">
                     <x-frontend.brand-card :brand="$b" />
                 </div>
             @endforeach
@@ -186,19 +197,29 @@
     </section>
 
     <!-- 7. New Arrivals -->
-    <section class="mb-5">
+    <section class="mb-5 b2b-slider-container">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
                 <span class="text-uppercase text-primary font-weight-800 fs-7 tracking-wider">Latest Releases</span>
                 <h2 class="h3 font-weight-800 mb-0">New Hardware Arrivals</h2>
             </div>
-            <a href="{{ route('frontend.products.index') }}" class="btn btn-link text-primary font-weight-700 text-decoration-none">
-                Explore New Arrivals <i class="fas fa-arrow-right ms-1"></i>
-            </a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ route('frontend.products.index') }}" class="btn btn-link text-primary font-weight-700 text-decoration-none d-none d-md-inline-block">
+                    Explore New Arrivals <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+                <div class="b2b-slider-controls">
+                    <button type="button" class="b2b-slider-btn b2b-slider-prev" aria-label="Previous New Arrivals" title="Previous">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button type="button" class="b2b-slider-btn b2b-slider-next" aria-label="Next New Arrivals" title="Next">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="row g-4">
+        <div class="b2b-slider-track">
             @foreach($newArrivals as $product)
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="b2b-slider-item">
                     <x-frontend.product-card :product="$product" />
                 </div>
             @endforeach

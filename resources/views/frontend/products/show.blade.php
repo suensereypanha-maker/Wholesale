@@ -166,13 +166,31 @@
         </div>
     </div>
 
-    <!-- Related Products -->
+    <!-- Related Products Slider -->
     @if(count($relatedProducts) > 0)
-        <div class="mb-5">
-            <h4 class="font-weight-800 mb-4 text-dark"><i class="fas fa-layer-group text-primary me-2"></i> Similar Hardware in {{ $product['category'] }}</h4>
-            <div class="row g-4">
+        <div class="mb-5 b2b-slider-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <span class="text-uppercase text-primary font-weight-800 fs-7 tracking-wider">Compatible Hardware</span>
+                    <h4 class="font-weight-800 text-dark mb-0"><i class="fas fa-layer-group text-primary me-2"></i> Similar Hardware in {{ $product['category'] }}</h4>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-secondary font-weight-500 fs-7 d-none d-md-inline-block">
+                        <i class="fas fa-hand-pointer text-primary opacity-75 me-1"></i> Scroll for more
+                    </span>
+                    <div class="b2b-slider-controls">
+                        <button type="button" class="b2b-slider-btn b2b-slider-prev" aria-label="Previous Products" title="Previous">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button type="button" class="b2b-slider-btn b2b-slider-next" aria-label="Next Products" title="Next">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="b2b-slider-track">
                 @foreach($relatedProducts as $rel)
-                    <div class="col-12 col-sm-6 col-md-3">
+                    <div class="b2b-slider-item">
                         <x-frontend.product-card :product="$rel" />
                     </div>
                 @endforeach
