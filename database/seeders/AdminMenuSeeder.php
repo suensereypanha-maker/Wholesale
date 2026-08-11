@@ -185,6 +185,13 @@ class AdminMenuSeeder extends Seeder
                         'permission' => '',
                         'order'      => 2,
                     ],
+                    [
+                        'title'      => 'Customers Register',
+                        'icon'       => 'fas fa-user-plus',
+                        'route'      => 'admin.customers.register',
+                        'permission' => '',
+                        'order'      => 3,
+                    ],
                 ],
             ],
 

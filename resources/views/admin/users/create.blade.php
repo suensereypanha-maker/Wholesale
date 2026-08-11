@@ -15,57 +15,146 @@
 
     <!-- Form Container Card -->
     <x-forms.card 
-        title="Create New Admin User" 
-        description="Add a new administrator or manager account and assign security roles" 
+        title="Create New User / B2B Customer Account" 
+        description="Add a new user, customer or admin account with full profile details and security roles" 
         icon="fas fa-user-plus"
         permission="manage_users"
     >
         <x-forms.form action="{{ route('admin.users.store') }}" method="POST">
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <!-- Name Field -->
-                <x-forms.input 
-                    name="name" 
-                    label="Full Name" 
-                    placeholder="e.g. Alexander Pierce" 
-                    icon="fas fa-user" 
-                    required 
-                    helpText="User's official name display"
-                />
+            <!-- Contact & Credentials Section -->
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">Account Credentials</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <x-forms.input 
+                        name="name" 
+                        label="Full Representative Name" 
+                        placeholder="e.g. Jane Smith" 
+                        icon="fas fa-user" 
+                        required 
+                    />
 
-                <!-- Email Field -->
-                <x-forms.input 
-                    type="email" 
-                    name="email" 
-                    label="Email Address" 
-                    placeholder="alexander@b2bwholesale.com" 
-                    icon="fas fa-envelope" 
-                    required 
-                    helpText="Must be a unique valid email"
-                />
+                    <x-forms.input 
+                        type="email" 
+                        name="email" 
+                        label="Business Email Address" 
+                        placeholder="jane@company.com" 
+                        icon="fas fa-envelope" 
+                        required 
+                    />
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <x-forms.input 
+                        type="password" 
+                        name="password" 
+                        label="Account Password" 
+                        placeholder="••••••••" 
+                        icon="fas fa-lock" 
+                        required 
+                        helpText="Minimum 8 characters"
+                    />
+
+                    <x-forms.select 
+                        name="role" 
+                        label="Assign System Role" 
+                        placeholder="-- Select User Role --"
+                        :options="$roles->pluck('name', 'name')" 
+                        icon="fas fa-user-shield" 
+                    />
+
+                    <x-forms.select 
+                        name="status" 
+                        label="Account Status" 
+                        :options="['active' => 'Active', 'pending' => 'Pending Approval', 'rejected' => 'Rejected']" 
+                        selected="active"
+                        icon="fas fa-circle-check" 
+                    />
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <!-- Password Field -->
-                <x-forms.input 
-                    type="password" 
-                    name="password" 
-                    label="Account Password" 
-                    placeholder="••••••••" 
-                    icon="fas fa-lock" 
-                    required 
-                    helpText="Minimum 8 characters"
-                />
+            <!-- B2B Organization & Tax Info -->
+            <div class="space-y-4 pt-4 border-t border-slate-100">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">Company & Business Information</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <x-forms.input 
+                        name="company" 
+                        label="Company Registered Name" 
+                        placeholder="e.g. Pacific Hardware Distributors Co." 
+                        icon="fas fa-building" 
+                    />
 
-                <!-- Assign Role Field -->
-                <x-forms.select 
-                    name="role" 
-                    label="Assign System Role" 
-                    placeholder="-- Select User Role --"
-                    :options="$roles->pluck('name', 'name')" 
-                    icon="fas fa-user-shield" 
-                    helpText="Defines user permissions in system"
-                />
+                    <x-forms.input 
+                        name="tax_number" 
+                        label="Tax Registration Number (VAT / EIN)" 
+                        placeholder="e.g. VAT-987654321 (Optional)" 
+                        icon="fas fa-file-invoice" 
+                        helpText="Leave empty if not available"
+                    />
+
+                    <x-forms.input 
+                        name="phone" 
+                        label="Phone Number" 
+                        placeholder="+1 (555) 345-6789" 
+                        icon="fas fa-phone" 
+                    />
+                </div>
+            </div>
+
+            <!-- Address & Location -->
+            <div class="space-y-4 pt-4 border-t border-slate-100">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">Address & Location</h3>
+                <div class="grid grid-cols-1 gap-5">
+                    <x-forms.input 
+                        name="address" 
+                        label="Headquarters Address" 
+                        placeholder="100 Tech Enterprise Way" 
+                        icon="fas fa-location-dot" 
+                    />
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-5">
+                    <x-forms.input name="city" label="City" placeholder="San Jose" icon="fas fa-city" />
+                    <x-forms.input name="province" label="State / Province" placeholder="California" icon="fas fa-map" />
+                    <x-forms.input name="zip" label="Postal Zip Code" placeholder="95134" icon="fas fa-mail-bulk" />
+                    <x-forms.input name="country" label="Country" placeholder="United States" icon="fas fa-globe" />
+                </div>
+            </div>
+
+            <!-- Wholesale Tier & Credit Limits -->
+            <div class="space-y-4 pt-4 border-t border-slate-100">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">Wholesale Tier & Credit Setup</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <x-forms.select 
+                        name="tier" 
+                        label="Wholesale Tier Level" 
+                        :options="[
+                            'Standard Wholesale' => 'Standard Wholesale (5%)',
+                            'Bulk Silver' => 'Bulk Silver (8-10%)',
+                            'Wholesale Gold' => 'Wholesale Gold (12-15%)',
+                            'VIP Platinum Wholesale' => 'VIP Platinum Wholesale (20%+)'
+                        ]" 
+                        selected="Standard Wholesale"
+                        icon="fas fa-award" 
+                    />
+
+                    <x-forms.input 
+                        type="number" 
+                        step="0.01" 
+                        name="credit_limit" 
+                        label="Credit Limit ($)" 
+                        placeholder="0.00" 
+                        icon="fas fa-credit-card" 
+                    />
+
+                    <x-forms.input 
+                        type="number" 
+                        step="0.01" 
+                        name="wholesale_discount" 
+                        label="Wholesale Discount (%)" 
+                        placeholder="0.00" 
+                        icon="fas fa-percent" 
+                    />
+                </div>
             </div>
 
             <!-- Footer Action Buttons -->

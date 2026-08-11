@@ -13,36 +13,46 @@
                         <i class="fas fa-building"></i>
                     </div>
                     <h2 class="h3 font-weight-800 text-dark">Commercial Account Application</h2>
-                    <p class="text-secondary fs-7">Register your organization to unlock bulk pricing and credit terms</p>
+                    <p class="text-secondary fs-7 mb-2">Register your organization to unlock bulk pricing and credit terms</p>
+                    <span class="badge bg-amber-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1.5 font-weight-600 fs-8">
+                        <i class="fas fa-user-clock me-1"></i> Requires Administrator Approval Before Access
+                    </span>
                 </div>
+
+                @if($errors->any())
+                    <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 fs-7">
+                        <i class="fas fa-exclamation-circle me-2"></i> {{ $errors->first() }}
+                    </div>
+                @endif
+
+                @if(session('error'))
+                    <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 fs-7">
+                        <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
+                    </div>
+                @endif
 
                 <form action="{{ route('frontend.register.store') }}" method="POST">
                     @csrf
 
                     <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label font-weight-700 fs-7">Company Registered Name *</label>
-                            <input type="text" name="company" class="form-control" placeholder="e.g. Pacific Hardware Distributors Co." required>
-                        </div>
-
                         <div class="col-md-6">
-                            <label class="form-label font-weight-700 fs-7">Tax Registration Number (VAT / EIN)</label>
-                            <input type="text" name="tax_number" class="form-control" placeholder="e.g. VAT-987654321">
+                            <label class="form-label font-weight-700 fs-7">Company Registered Name *</label>
+                            <input type="text" name="company" class="form-control" value="{{ old('company') }}" placeholder="e.g. Apex Enterprise Solutions" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label font-weight-700 fs-7">Authorized Representative Name *</label>
-                            <input type="text" name="name" class="form-control" placeholder="Jane Smith" required>
+                            <input type="text" name="name" class="form-control" value="{{ old('name') }}" placeholder="John Doe" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label font-weight-700 fs-7">Business Email Address *</label>
-                            <input type="email" name="email" class="form-control" placeholder="jane@pacifichardware.com" required>
+                            <input type="email" name="email" class="form-control" value="{{ old('email') }}" placeholder="john@apexsolutions.com" required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label font-weight-700 fs-7">Phone Number *</label>
-                            <input type="text" name="phone" class="form-control" placeholder="+1 (555) 345-6789" required>
+                            <input type="text" name="phone" class="form-control" value="{{ old('phone') }}" placeholder="+1 (555) 019-2834" required>
                         </div>
 
                         <div class="col-md-6">

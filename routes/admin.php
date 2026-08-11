@@ -48,6 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('orders', OrderController::class);
     Route::post('users/{user}/approve', [UserController::class, 'approve'])->name('users.approve');
     Route::post('users/{user}/reject', [UserController::class, 'reject'])->name('users.reject');
+    Route::get('customers-register', [UserController::class, 'customersRegister'])->name('customers.register');
     Route::resource('users', UserController::class);
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);

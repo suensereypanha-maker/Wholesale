@@ -2,7 +2,8 @@
     $cart = session('frontend_cart', []);
     $cartCount = array_sum(array_column($cart, 'quantity'));
     $wishlistCount = count(session('frontend_wishlist', []));
-    $customer = session('frontend_customer');
+    $authUser = auth()->user();
+    $customer = $authUser ? $authUser->toArray() : session('frontend_customer');
     $categories = \App\Data\FrontendData::categories();
 @endphp
 

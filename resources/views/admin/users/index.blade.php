@@ -1,6 +1,11 @@
 @extends('admin.layout.app')
 
-@section('title', 'User Management')
+@php
+    $isCustomer = !empty($isCustomerRegister);
+    $routeBase = $isCustomer ? 'admin.customers.register' : 'admin.users.index';
+@endphp
+
+@section('title', $isCustomer ? 'Customers Register' : 'User Management')
 
 @section('content')
 <div class="space-y-6 w-full">
@@ -10,11 +15,13 @@
         <div>
             <div class="flex items-center gap-3">
                 <span class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
-                    <i class="fas fa-users-gear text-xl"></i>
+                    <i class="fas {{ $isCustomer ? 'fa-id-card' : 'fa-users-gear' }} text-xl"></i>
                 </span>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">User Management</h1>
-                    <p class="text-xs text-slate-500">Manage administrator accounts, user registration approvals, roles, and permissions</p>
+                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">{{ $isCustomer ? 'Customers Register' : 'User Management' }}</h1>
+                    <p class="text-xs text-slate-500">
+                        {{ $isCustomer ? 'Manage and approve B2B customer accounts registered from the storefront' : 'Manage administrator accounts, user registration approvals, roles, and permissions' }}
+                    </p>
                 </div>
             </div>
         </div>
@@ -33,7 +40,7 @@
     <!-- Summary Metrics Row -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
         <!-- Total Accounts -->
-        <a href="{{ route('admin.users.index') }}" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:border-indigo-300 transition-colors group">
+        <a href="{{ route($routeBase) }}" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:border-indigo-300 transition-colors group">
             <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Accounts</p>
                 <p class="text-2xl font-black text-slate-900 mt-1">{{ $totalUsers }}</p>
@@ -44,7 +51,7 @@
         </a>
 
         <!-- Active Users -->
-        <a href="{{ route('admin.users.index', ['status' => 'active']) }}" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:border-emerald-300 transition-colors group">
+        <a href="{{ route($routeBase, ['status' => 'active']) }}" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:border-emerald-300 transition-colors group">
             <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Users</p>
                 <p class="text-2xl font-black text-emerald-600 mt-1">{{ $activeUsers }}</p>
@@ -55,7 +62,7 @@
         </a>
 
         <!-- Pending Approval Alert Card -->
-        <a href="{{ route('admin.users.index', ['status' => 'pending']) }}" class="bg-white p-5 rounded-2xl border {{ $pendingUsers > 0 ? 'border-amber-300 bg-amber-50/20 ring-2 ring-amber-400/20' : 'border-slate-200/80' }} shadow-xs flex items-center justify-between hover:border-amber-400 transition-colors group">
+        <a href="{{ route($routeBase, ['status' => 'pending']) }}" class="bg-white p-5 rounded-2xl border {{ $pendingUsers > 0 ? 'border-amber-300 bg-amber-50/20 ring-2 ring-amber-400/20' : 'border-slate-200/80' }} shadow-xs flex items-center justify-between hover:border-amber-400 transition-colors group">
             <div>
                 <div class="flex items-center gap-2">
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pending Approval</p>
@@ -74,7 +81,7 @@
         </a>
 
         <!-- Rejected / Suspended -->
-        <a href="{{ route('admin.users.index', ['status' => 'rejected']) }}" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:border-rose-300 transition-colors group">
+        <a href="{{ route($routeBase, ['status' => 'rejected']) }}" class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between hover:border-rose-300 transition-colors group">
             <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rejected / Suspended</p>
                 <p class="text-2xl font-black text-rose-600 mt-1">{{ $rejectedUsers }}</p>
@@ -93,12 +100,12 @@
                     <i class="fas fa-user-clock"></i>
                 </div>
                 <div>
-                    <h2 class="font-bold text-sm">You have {{ $pendingUsers }} pending user {{ Str::plural('registration', $pendingUsers) }} awaiting approval!</h2>
+                    <h2 class="font-bold text-sm">You have {{ $pendingUsers }} pending customer {{ Str::plural('registration', $pendingUsers) }} awaiting approval!</h2>
                     <p class="text-xs text-amber-100">Review and approve new user requests to grant system access.</p>
                 </div>
             </div>
-            <a href="{{ route('admin.users.index', ['status' => 'pending']) }}" class="px-4 py-2 bg-white text-amber-800 rounded-xl text-xs font-bold hover:bg-amber-50 transition-colors shadow-xs flex-shrink-0 flex items-center gap-1.5">
-                <span>View Pending Users</span>
+            <a href="{{ route($routeBase, ['status' => 'pending']) }}" class="px-4 py-2 bg-white text-amber-800 rounded-xl text-xs font-bold hover:bg-amber-50 transition-colors shadow-xs flex-shrink-0 flex items-center gap-1.5">
+                <span>View Pending Customers</span>
                 <i class="fas fa-arrow-right text-[10px]"></i>
             </a>
         </div>
@@ -112,11 +119,11 @@
             
             <!-- Status Filter Pills -->
             <div class="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0">
-                <a href="{{ route('admin.users.index', array_merge(request()->except(['status', 'page']))) }}" 
+                <a href="{{ route($routeBase, array_merge(request()->except(['status', 'page']))) }}" 
                    class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all {{ !request()->filled('status') ? 'bg-slate-900 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200' }}">
-                    All Users ({{ $totalUsers }})
+                    All {{ $isCustomer ? 'Customers' : 'Users' }} ({{ $totalUsers }})
                 </a>
-                <a href="{{ route('admin.users.index', array_merge(request()->except(['page']), ['status' => 'pending'])) }}" 
+                <a href="{{ route($routeBase, array_merge(request()->except(['page']), ['status' => 'pending'])) }}" 
                    class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 {{ request('status') === 'pending' ? 'bg-amber-500 text-white shadow-xs' : 'bg-amber-50 text-amber-700 hover:bg-amber-100' }}">
                     <i class="fas fa-clock text-[10px]"></i>
                     <span>Pending Approval</span>
@@ -124,18 +131,18 @@
                         <span class="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-600 text-white font-extrabold">{{ $pendingUsers }}</span>
                     @endif
                 </a>
-                <a href="{{ route('admin.users.index', array_merge(request()->except(['page']), ['status' => 'active'])) }}" 
+                <a href="{{ route($routeBase, array_merge(request()->except(['page']), ['status' => 'active'])) }}" 
                    class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all {{ request('status') === 'active' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' }}">
                     Active ({{ $activeUsers }})
                 </a>
-                <a href="{{ route('admin.users.index', array_merge(request()->except(['page']), ['status' => 'rejected'])) }}" 
+                <a href="{{ route($routeBase, array_merge(request()->except(['page']), ['status' => 'rejected'])) }}" 
                    class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all {{ request('status') === 'rejected' ? 'bg-rose-600 text-white shadow-xs' : 'bg-rose-50 text-rose-700 hover:bg-rose-100' }}">
                     Rejected ({{ $rejectedUsers }})
                 </a>
             </div>
 
             <!-- Search Form -->
-            <x-forms.form action="{{ route('admin.users.index') }}" method="GET" class="w-full lg:w-72 !space-y-0">
+            <x-forms.form action="{{ route($routeBase) }}" method="GET" class="w-full lg:w-72 !space-y-0">
                 @if(request('status'))
                     <input type="hidden" name="status" value="{{ request('status') }}">
                 @endif
@@ -163,20 +170,30 @@
                 <tbody class="divide-y divide-slate-100 text-xs text-slate-700">
                     @forelse ($users as $user)
                         <tr class="hover:bg-slate-50/60 transition-colors {{ $user->status === 'pending' ? 'bg-amber-50/10' : '' }}">
-                            <!-- User Account -->
+                            <!-- User Account & B2B Details -->
                             <td class="py-4 px-6">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl {{ $user->status === 'pending' ? 'bg-amber-500 text-white' : ($user->status === 'rejected' ? 'bg-rose-500 text-white' : 'bg-slate-900 text-white') }} font-bold flex items-center justify-center text-xs shadow-xs flex-shrink-0">
                                         {{ strtoupper(substr($user->name, 0, 2)) }}
                                     </div>
                                     <div class="min-w-0">
-                                        <a href="{{ route('admin.users.show', $user) }}" class="font-bold text-slate-900 text-sm truncate hover:text-indigo-600 transition-colors block flex items-center gap-1.5">
+                                        <a href="{{ route('admin.users.show', $user) }}" class="font-bold text-slate-900 text-sm truncate hover:text-indigo-600 transition-colors flex items-center gap-1.5">
                                             <span>{{ $user->name }}</span>
                                             @if($user->status === 'pending')
                                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300">New</span>
                                             @endif
                                         </a>
                                         <p class="text-xs text-slate-500 truncate">{{ $user->email }}</p>
+                                        @if($user->company)
+                                            <p class="text-[11px] font-semibold text-emerald-700 truncate mt-0.5">
+                                                <i class="fas fa-building text-[10px] me-1"></i>{{ $user->company }}
+                                                @if($user->tax_number)
+                                                    <span class="text-slate-400 font-normal">({{ $user->tax_number }})</span>
+                                                @else
+                                                    <span class="text-slate-400 font-normal">(No Tax ID)</span>
+                                                @endif
+                                            </p>
+                                        @endif
                                     </div>
                                 </div>
                             </td>

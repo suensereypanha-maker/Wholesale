@@ -18,7 +18,9 @@ class UserController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = User::with('roles')->latest();
+        $query = User::whereDoesntHave('roles', function ($q) {
+            $q->where('name', 'User');
+        })->with('roles')->latest();
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -37,12 +39,16 @@ class UserController extends Controller
 
         $users = $query->paginate(10)->withQueryString();
 
-        $totalUsers = User::count();
-        $activeUsers = User::where('status', 'active')->count();
-        $pendingUsers = User::where(function ($q) {
+        $adminQuery = User::whereDoesntHave('roles', function ($q) {
+            $q->where('name', 'User');
+        });
+
+        $totalUsers = (clone $adminQuery)->count();
+        $activeUsers = (clone $adminQuery)->where('status', 'active')->count();
+        $pendingUsers = (clone $adminQuery)->where(function ($q) {
             $q->where('status', 'pending')->orWhereNull('status');
         })->count();
-        $rejectedUsers = User::where('status', 'rejected')->count();
+        $rejectedUsers = (clone $adminQuery)->where('status', 'rejected')->count();
 
         return view('admin.users.index', compact(
             'users',
@@ -50,6 +56,55 @@ class UserController extends Controller
             'activeUsers',
             'pendingUsers',
             'rejectedUsers'
+        ));
+    }
+
+    /**
+     * Display a listing of frontend registered customer users only.
+     */
+    public function customersRegister(Request $request): View
+    {
+        $query = User::whereHas('roles', function ($q) {
+            $q->where('name', 'User');
+        })->with('roles')->latest();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('company', 'like', "%{$search}%")
+                  ->orWhere('tax_number', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $users = $query->paginate(10)->withQueryString();
+
+        $customerQuery = User::whereHas('roles', function ($q) {
+            $q->where('name', 'User');
+        });
+
+        $totalUsers = (clone $customerQuery)->count();
+        $activeUsers = (clone $customerQuery)->where('status', 'active')->count();
+        $pendingUsers = (clone $customerQuery)->where(function ($q) {
+            $q->where('status', 'pending')->orWhereNull('status');
+        })->count();
+        $rejectedUsers = (clone $customerQuery)->where('status', 'rejected')->count();
+
+        $isCustomerRegister = true;
+
+        return view('admin.users.index', compact(
+            'users',
+            'totalUsers',
+            'activeUsers',
+            'pendingUsers',
+            'rejectedUsers',
+            'isCustomerRegister'
         ));
     }
 
@@ -72,6 +127,17 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8',
+            'company' => 'nullable|string|max:255',
+            'tax_number' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:255',
+            'province' => 'nullable|string|max:255',
+            'zip' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:255',
+            'tier' => 'nullable|string|max:255',
+            'credit_limit' => 'nullable|numeric|min:0',
+            'wholesale_discount' => 'nullable|numeric|min:0|max:100',
             'role' => 'nullable|string|exists:roles,name',
             'status' => 'nullable|string|in:active,pending,rejected',
         ]);
@@ -80,15 +146,31 @@ class UserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'company' => $validated['company'] ?? null,
+            'tax_number' => $validated['tax_number'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'city' => $validated['city'] ?? null,
+            'province' => $validated['province'] ?? null,
+            'zip' => $validated['zip'] ?? null,
+            'country' => $validated['country'] ?? null,
+            'tier' => $validated['tier'] ?? 'Standard Wholesale',
+            'credit_limit' => $validated['credit_limit'] ?? 0.00,
+            'wholesale_discount' => $validated['wholesale_discount'] ?? 0.00,
             'status' => $validated['status'] ?? 'active',
         ]);
 
         if (!empty($validated['role'])) {
             $user->assignRole($validated['role']);
+        } else {
+            $defaultRole = Role::where('name', 'User')->first();
+            if ($defaultRole) {
+                $user->assignRole($defaultRole->name);
+            }
         }
 
         return redirect()->route('admin.users.index')
-            ->with('success', "User account '{$user->name}' created successfully.");
+            ->with('success', "User customer account '{$user->name}' created successfully.");
     }
 
     /**
@@ -122,6 +204,17 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8',
+            'company' => 'nullable|string|max:255',
+            'tax_number' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:500',
+            'city' => 'nullable|string|max:255',
+            'province' => 'nullable|string|max:255',
+            'zip' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:255',
+            'tier' => 'nullable|string|max:255',
+            'credit_limit' => 'nullable|numeric|min:0',
+            'wholesale_discount' => 'nullable|numeric|min:0|max:100',
             'role' => 'nullable|string|exists:roles,name',
             'status' => 'required|string|in:active,pending,rejected',
         ]);
@@ -129,6 +222,17 @@ class UserController extends Controller
         $userData = [
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'company' => $validated['company'] ?? null,
+            'tax_number' => $validated['tax_number'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'city' => $validated['city'] ?? null,
+            'province' => $validated['province'] ?? null,
+            'zip' => $validated['zip'] ?? null,
+            'country' => $validated['country'] ?? null,
+            'tier' => $validated['tier'] ?? 'Standard Wholesale',
+            'credit_limit' => $validated['credit_limit'] ?? 0.00,
+            'wholesale_discount' => $validated['wholesale_discount'] ?? 0.00,
             'status' => $validated['status'],
         ];
 
@@ -143,7 +247,7 @@ class UserController extends Controller
         }
 
         return redirect()->route('admin.users.index')
-            ->with('success', "User account '{$user->name}' updated successfully.");
+            ->with('success', "User customer account '{$user->name}' updated successfully.");
     }
 
     /**

@@ -8,6 +8,12 @@
         ->get();
 
     $navMenuGroups = $dbMenus->groupBy('section');
+
+    $pendingCustomersCount = \App\Models\User::whereHas('roles', function ($q) {
+        $q->where('name', 'User');
+    })->where(function ($q) {
+        $q->where('status', 'pending')->orWhereNull('status');
+    })->count();
 @endphp
 
 <!-- Sidebar Navigation Component -->
@@ -66,11 +72,14 @@
                                 $menuId = 'submenu-' . \Illuminate\Support\Str::slug($item->title);
                                 
                                 $hasActiveChild = false;
+                                $parentBadgeCount = 0;
                                 if ($hasSubmenu) {
                                     foreach ($item->children as $sub) {
                                         if (!empty($sub->route) && \Illuminate\Support\Facades\Route::has($sub->route) && request()->routeIs($sub->route)) {
                                             $hasActiveChild = true;
-                                            break;
+                                        }
+                                        if (!empty($sub->route) && $sub->route === 'admin.customers.register') {
+                                            $parentBadgeCount = $pendingCustomersCount;
                                         }
                                     }
                                 }
@@ -92,6 +101,9 @@
                                             <span class="nav-item-text">{{ $item->title }}</span>
                                         </div>
                                         <div class="flex items-center gap-2">
+                                            @if($parentBadgeCount > 0)
+                                                <span class="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-white animate-pulse">{{ $parentBadgeCount }}</span>
+                                            @endif
                                             <i id="arrow-{{ $menuId }}" class="fas fa-chevron-down text-[10px] text-slate-400 group-hover:text-slate-600 transition-transform duration-200 {{ $hasActiveChild ? 'rotate-180' : '' }}"></i>
                                         </div>
                                     </button>
@@ -102,12 +114,18 @@
                                             @php
                                                 $isSubActive = !empty($sub->route) && \Illuminate\Support\Facades\Route::has($sub->route) ? request()->routeIs($sub->route) : false;
                                                 $subUrl = !empty($sub->route) && \Illuminate\Support\Facades\Route::has($sub->route) ? route($sub->route) : ($sub->url ?? '#');
+                                                $isCustomerRegisterRoute = (!empty($sub->route) && $sub->route === 'admin.customers.register');
                                             @endphp
                                             <li>
                                                 <a href="{{ $subUrl }}" 
-                                                   class="flex items-center gap-2.5 px-3 py-2 rounded-lg font-medium text-xs transition-all duration-150 {{ $isSubActive ? 'text-indigo-600 font-semibold bg-indigo-50/60' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50' }}">
-                                                    <i class="{{ $sub->icon ?? 'fas fa-circle' }} text-xs {{ $isSubActive ? 'text-indigo-600' : 'text-slate-400' }}"></i>
-                                                    <span class="nav-item-text">{{ $sub->title }}</span>
+                                                   class="flex items-center justify-between px-3 py-2 rounded-lg font-medium text-xs transition-all duration-150 {{ $isSubActive ? 'text-indigo-600 font-semibold bg-indigo-50/60' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50' }}">
+                                                    <div class="flex items-center gap-2.5">
+                                                        <i class="{{ $sub->icon ?? 'fas fa-circle' }} text-xs {{ $isSubActive ? 'text-indigo-600' : 'text-slate-400' }}"></i>
+                                                        <span class="nav-item-text">{{ $sub->title }}</span>
+                                                    </div>
+                                                    @if($isCustomerRegisterRoute && $pendingCustomersCount > 0)
+                                                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-white animate-pulse ml-auto">{{ $pendingCustomersCount }}</span>
+                                                    @endif
                                                 </a>
                                             </li>
                                         @endforeach
@@ -120,6 +138,9 @@
                                             <i class="{{ $item->icon }} w-5 text-center text-base {{ $isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600' }}"></i>
                                             <span class="nav-item-text">{{ $item->title }}</span>
                                         </div>
+                                        @if(!empty($item->route) && $item->route === 'admin.customers.register' && $pendingCustomersCount > 0)
+                                            <span class="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-white animate-pulse">{{ $pendingCustomersCount }}</span>
+                                        @endif
                                     </a>
                                 @endif
                             </li>

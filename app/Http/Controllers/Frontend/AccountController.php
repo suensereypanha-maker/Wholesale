@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Data\FrontendData;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AccountController extends Controller
 {
     public function index()
     {
-        $customer = session()->get('frontend_customer', FrontendData::sampleCustomer());
+        $user = Auth::user();
+        $customer = $user ? $user->toArray() : session()->get('frontend_customer', FrontendData::sampleCustomer());
         $orders = session()->get('frontend_orders', FrontendData::sampleOrders());
         $quotes = session()->get('frontend_quotes', FrontendData::sampleQuotes());
 
@@ -32,17 +34,20 @@ class AccountController extends Controller
 
     public function profile()
     {
-        $customer = session()->get('frontend_customer', FrontendData::sampleCustomer());
+        $user = Auth::user();
+        $customer = $user ? $user->toArray() : session()->get('frontend_customer', FrontendData::sampleCustomer());
         return view('frontend.account.profile', compact('customer'));
     }
 
     public function updateProfile(Request $request)
     {
-        $request->validate([
+        $user = Auth::user();
+
+        $validated = $request->validate([
             'company' => 'required|string|max:255',
             'tax_number' => 'nullable|string',
             'name' => 'required|string|max:255',
-            'email' => 'required|email',
+            'email' => 'required|email|unique:users,email,' . ($user ? $user->id : 0),
             'phone' => 'required|string',
             'address' => 'required|string',
             'city' => 'required|string',
@@ -51,21 +56,11 @@ class AccountController extends Controller
             'country' => 'required|string',
         ]);
 
-        $customer = [
-            'id' => 1,
-            'company' => $request->company,
-            'tax_number' => $request->tax_number,
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'city' => $request->city,
-            'province' => $request->province,
-            'zip' => $request->zip,
-            'country' => $request->country,
-        ];
-
-        session()->put('frontend_customer', $customer);
+        if ($user) {
+            $user->update($validated);
+        } else {
+            session()->put('frontend_customer', $validated);
+        }
 
         return redirect()->route('frontend.account.profile')->with('success', 'Company profile updated successfully.');
     }

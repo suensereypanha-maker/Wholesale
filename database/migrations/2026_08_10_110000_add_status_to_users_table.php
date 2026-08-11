@@ -13,7 +13,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('status')->default('pending')->after('remember_token');
+            $table->string('company')->nullable()->after('name');
+            $table->string('tax_number')->nullable()->after('company');
+            $table->string('phone')->nullable()->after('email');
+            $table->text('address')->nullable()->after('phone');
+            $table->string('city')->nullable()->after('address');
+            $table->string('province')->nullable()->after('city');
+            $table->string('zip')->nullable()->after('province');
+            $table->string('country')->nullable()->after('zip');
+            $table->string('tier')->default('Standard Wholesale')->after('country');
+            $table->decimal('credit_limit', 12, 2)->default(0.00)->after('tier');
+            $table->decimal('wholesale_discount', 5, 2)->default(0.00)->after('credit_limit');
+            $table->string('status')->default('active')->after('remember_token');
         });
 
         // Set existing users to active
@@ -26,7 +37,20 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('status');
+            $table->dropColumn([
+                'company',
+                'tax_number',
+                'phone',
+                'address',
+                'city',
+                'province',
+                'zip',
+                'country',
+                'tier',
+                'credit_limit',
+                'wholesale_discount',
+                'status',
+            ]);
         });
     }
 };

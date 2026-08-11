@@ -16,8 +16,17 @@
                     <p class="text-secondary fs-7">Access your wholesale pricing tiers & purchase orders</p>
                 </div>
 
-                <!-- Demo Account Information Box -->
-               
+                @if(session('success'))
+                    <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 fs-7">
+                        <i class="fas fa-circle-check me-2"></i> {{ session('success') }}
+                    </div>
+                @endif
+
+                @if($errors->any())
+                    <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 fs-7">
+                        <i class="fas fa-exclamation-triangle me-2"></i> {{ $errors->first() }}
+                    </div>
+                @endif
 
                 <form action="{{ route('frontend.login.store') }}" method="POST">
                     @csrf
@@ -26,7 +35,7 @@
                         <label class="form-label font-weight-700 fs-7">Business Email Address</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-envelope text-secondary"></i></span>
-                            <input type="email" name="email" class="form-control" value="john@example.com" required>
+                            <input type="email" name="email" class="form-control" value="{{ old('email') }}" placeholder="name@company.com" required>
                         </div>
                     </div>
 
@@ -37,7 +46,7 @@
                         </div>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-key text-secondary"></i></span>
-                            <input type="password" name="password" class="form-control" value="123456" required>
+                            <input type="password" name="password" class="form-control" placeholder="••••••••" required>
                         </div>
                     </div>
 

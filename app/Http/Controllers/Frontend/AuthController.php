@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Data\FrontendData;
+use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -15,18 +18,35 @@ class AuthController extends Controller
 
     public function storeLogin(Request $request)
     {
-        $request->validate([
+        $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        // Mock login verification
-        $customer = FrontendData::sampleCustomer();
-        $customer['email'] = $request->email;
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $user = Auth::user();
 
-        session()->put('frontend_customer', $customer);
+            if ($user->status === 'pending') {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Your B2B account registration is currently pending administrator approval.',
+                ])->onlyInput('email');
+            }
 
-        return redirect()->route('frontend.account')->with('success', 'Welcome back, ' . $customer['name'] . '!');
+            if ($user->status === 'rejected') {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Your B2B account registration has been rejected or suspended. Please contact support.',
+                ])->onlyInput('email');
+            }
+
+            $request->session()->regenerate();
+            return redirect()->route('frontend.account')->with('success', 'Welcome back, ' . $user->name . '!');
+        }
+
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ])->onlyInput('email');
     }
 
     public function register()
@@ -38,35 +58,46 @@ class AuthController extends Controller
     {
         $request->validate([
             'company' => 'required|string|max:255',
-            'tax_number' => 'nullable|string',
+            'tax_number' => 'nullable|string|max:255',
             'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'phone' => 'required|string',
-            'password' => 'required|min:6',
+            'email' => 'required|email|max:255|unique:users',
+            'phone' => 'required|string|max:255',
+            'password' => 'required|string|min:6|confirmed',
         ]);
 
-        $newCustomer = [
-            'id' => rand(10, 999),
-            'company' => $request->company,
-            'tax_number' => $request->tax_number ?? 'VAT-PENDING',
+        $user = User::create([
             'name' => $request->name,
+            'company' => $request->company,
+            'tax_number' => $request->filled('tax_number') ? $request->tax_number : null,
             'email' => $request->email,
             'phone' => $request->phone,
-            'address' => 'Corporate Address Provided',
-            'city' => 'Business City',
-            'province' => 'State',
-            'zip' => '10001',
-            'country' => 'United States',
-        ];
+            'password' => Hash::make($request->password),
+            'address' => $request->address ?? 'Corporate Address Provided',
+            'city' => $request->city ?? 'Business City',
+            'province' => $request->province ?? 'State',
+            'zip' => $request->zip ?? '10001',
+            'country' => $request->country ?? 'United States',
+            'tier' => 'Standard Wholesale',
+            'credit_limit' => 0.00,
+            'wholesale_discount' => 0.00,
+            'status' => 'pending',
+        ]);
 
-        session()->put('frontend_customer', $newCustomer);
+        // Assign default User role
+        $userRole = Role::where('name', 'User')->first();
+        if ($userRole) {
+            $user->assignRole($userRole->name);
+        }
 
-        return redirect()->route('frontend.account')->with('success', 'B2B Account registered successfully!');
+        return redirect()->route('frontend.login')->with('success', 'Your B2B commercial account application has been submitted successfully! Your account is currently pending administrator approval.');
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        session()->forget('frontend_customer');
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('frontend.home')->with('success', 'You have been logged out.');
     }
 }
