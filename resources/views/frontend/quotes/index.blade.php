@@ -67,8 +67,8 @@
             <!-- RFQ Summary Metrics Bar -->
             @php
                 $fqTotalCount = $quotes->count();
-                $fqTotalQty = $quotes->sum('quantity');
-                $fqApprovedCount = $quotes->filter(fn($q) => in_array(is_object($q) ? $q->status : ($q['status'] ?? ''), ['quoted', 'approved', 'Approved', 'Quote Offered']))->count();
+                $fqTotalQty = $quotes->sum(function($q) { return is_object($q) ? ($q->quantity ?? 0) : ($q['quantity'] ?? 0); });
+                $fqApprovedCount = $quotes->filter(fn($q) => in_array(is_object($q) ? ($q->status ?? '') : ($q['status'] ?? ''), ['quoted', 'approved', 'Approved', 'Quote Offered']))->count();
             @endphp
             <div class="row g-3 mb-4">
                 <div class="col-4">
@@ -125,17 +125,17 @@
                             <tbody>
                                 @foreach($quotes as $qt)
                                     @php
-                                        $qId = is_object($qt) ? ($qt->quote_number ?? $qt->id) : ($qt['quote_number'] ?? $qt['id']);
-                                        $qDate = is_object($qt) ? $qt->created_at->format('Y-m-d') : ($qt['date'] ?? date('Y-m-d'));
-                                        $pName = is_object($qt) ? $qt->product_name : $qt['product_name'];
+                                        $qId = is_object($qt) ? ($qt->quote_number ?? $qt->id ?? '') : ($qt['quote_number'] ?? $qt['id'] ?? '');
+                                        $qDate = is_object($qt) ? (isset($qt->created_at) ? (is_string($qt->created_at) ? $qt->created_at : $qt->created_at->format('Y-m-d')) : date('Y-m-d')) : ($qt['date'] ?? date('Y-m-d'));
+                                        $pName = is_object($qt) ? ($qt->product_name ?? '') : ($qt['product_name'] ?? '');
                                         $pShortName = \Illuminate\Support\Str::limit($pName, 35);
-                                        $qty = is_object($qt) ? $qt->quantity : $qt['quantity'];
-                                        $targetPrice = is_object($qt) ? $qt->target_price : ($qt['target_price'] ?? null);
-                                        $offeredPrice = is_object($qt) ? $qt->offered_price : ($qt['offered_price'] ?? null);
-                                        $status = is_object($qt) ? $qt->status : ($qt['status'] ?? 'pending');
-                                        $message = is_object($qt) ? $qt->message : ($qt['message'] ?? '');
-                                        $adminNotes = is_object($qt) ? $qt->admin_notes : ($qt['admin_notes'] ?? '');
-                                        $rawId = is_object($qt) ? $qt->id : $qId;
+                                        $qty = is_object($qt) ? ($qt->quantity ?? 0) : ($qt['quantity'] ?? 0);
+                                        $targetPrice = is_object($qt) ? ($qt->target_price ?? null) : ($qt['target_price'] ?? null);
+                                        $offeredPrice = is_object($qt) ? ($qt->offered_price ?? null) : ($qt['offered_price'] ?? null);
+                                        $status = is_object($qt) ? ($qt->status ?? 'pending') : ($qt['status'] ?? 'pending');
+                                        $message = is_object($qt) ? ($qt->message ?? '') : ($qt['message'] ?? '');
+                                        $adminNotes = is_object($qt) ? ($qt->admin_notes ?? '') : ($qt['admin_notes'] ?? '');
+                                        $rawId = is_object($qt) ? ($qt->id ?? $qId) : ($qt['id'] ?? $qId);
                                     @endphp
                                     <tr>
                                         <td class="font-monospace font-weight-800 text-primary text-nowrap">
