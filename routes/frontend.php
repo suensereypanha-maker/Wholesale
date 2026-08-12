@@ -73,12 +73,21 @@ Route::get('/orders', [OrderController::class, 'index'])
 Route::get('/orders/{id}', [OrderController::class, 'show'])
     ->name('frontend.orders.show');
 
+Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel'])
+    ->name('frontend.orders.cancel');
+
 // Quote Request Routes
 Route::get('/quotes/create', [QuoteController::class, 'create'])
     ->name('frontend.quotes.create');
 
 Route::post('/quotes', [QuoteController::class, 'store'])
     ->name('frontend.quotes.store');
+
+Route::get('/account/quotes', [QuoteController::class, 'index'])
+    ->name('frontend.quotes.index');
+
+Route::post('/quotes/{id}/accept', [QuoteController::class, 'acceptAndOrder'])
+    ->name('frontend.quotes.accept');
 
 // Account Dashboard & Profile
 Route::get('/account', [AccountController::class, 'index'])

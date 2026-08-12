@@ -14,6 +14,8 @@
     })->where(function ($q) {
         $q->where('status', 'pending')->orWhereNull('status');
     })->count();
+
+    $pendingQuotesCount = \Schema::hasTable('quotes') ? \App\Models\Quote::whereIn('status', ['pending', 'under_review'])->count() : 0;
 @endphp
 
 <!-- Sidebar Navigation Component -->
@@ -143,6 +145,9 @@
                                         </div>
                                         @if(!empty($item->route) && $item->route === 'admin.customers.register' && $pendingCustomersCount > 0)
                                             <span class="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-white animate-pulse">{{ $pendingCustomersCount }}</span>
+                                        @endif
+                                        @if(($item->title === 'Quotes & Inquiries' || (!empty($item->route) && str_contains($item->route, 'quote'))) && $pendingQuotesCount > 0)
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-600 text-white shadow-xs animate-pulse" title="{{ $pendingQuotesCount }} pending quotes">{{ $pendingQuotesCount }}</span>
                                         @endif
                                     </a>
                                 @endif

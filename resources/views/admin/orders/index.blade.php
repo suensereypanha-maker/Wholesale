@@ -8,12 +8,14 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                <span>Customer Orders</span>
+                <span>{{ isset($isCustomerRegisterOrders) ? 'Customer Register Orders (Frontend)' : 'Customer Partner Orders' }}</span>
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                    B2B Wholesale Procurement
+                    {{ isset($isCustomerRegisterOrders) ? 'Frontend Storefront' : 'B2B Wholesale Procurement' }}
                 </span>
             </h1>
-            <p class="text-sm text-slate-500 mt-1">Manage corporate partner bulk orders, payment terms, and fulfillment pipeline</p>
+            <p class="text-sm text-slate-500 mt-1">
+                {{ isset($isCustomerRegisterOrders) ? 'Manage orders placed online by registered frontend customers' : 'Manage corporate B2B partner bulk orders, contract payment terms, and fulfillment pipeline' }}
+            </p>
         </div>
         <div>
             <a href="{{ route('admin.orders.create') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-xs hover:shadow transition-all">
@@ -66,7 +68,7 @@
     <!-- Tab Navigation -->
     <div class="border-b border-slate-200 flex gap-4 text-xs font-bold">
         <a href="{{ route('admin.orders.index') }}" class="pb-3 border-b-2 transition-colors {{ !isset($isCustomerRegisterOrders) ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
-            <i class="fas fa-list-check mr-1.5"></i> All Customer Orders
+            <i class="fas fa-handshake mr-1.5"></i> Customer Partner Orders
         </a>
         <a href="{{ route('admin.orders.registered') }}" class="pb-3 border-b-2 transition-colors {{ isset($isCustomerRegisterOrders) ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700' }}">
             <i class="fas fa-user-plus mr-1.5"></i> Customer Register Orders (Frontend)
@@ -129,9 +131,13 @@
                                 <a href="{{ route('admin.orders.show', $order->id) }}" class="font-bold text-indigo-600 hover:underline text-sm">
                                     {{ $order->order_number }}
                                 </a>
-                                @if(!empty($order->user_id))
+                                @if($order->order_source === 'frontend')
                                     <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 ml-1">
                                         <i class="fas fa-globe text-[9px] mr-1"></i>Frontend
+                                    </span>
+                                @else
+                                    <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 ml-1">
+                                        <i class="fas fa-handshake text-[9px] mr-1"></i>Partner Order
                                     </span>
                                 @endif
                                 <p class="text-[11px] text-slate-400 mt-0.5">
@@ -214,7 +220,7 @@
                         <tr>
                             <td colspan="6" class="px-5 py-12 text-center text-slate-400">
                                 <i class="fas fa-inbox text-4xl mb-3 text-slate-300"></i>
-                                <p class="font-bold text-slate-600 text-sm">No Wholesale Customer Orders Found</p>
+                                <p class="font-bold text-slate-600 text-sm">No {{ isset($isCustomerRegisterOrders) ? 'Customer Register Frontend' : 'Wholesale Customer Partner' }} Orders Found</p>
                                 <p class="text-xs mt-1">Try adjusting search query or filter options.</p>
                             </td>
                         </tr>

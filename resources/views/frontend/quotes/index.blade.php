@@ -1,6 +1,6 @@
 @extends('frontend.layouts.app')
 
-@section('title', 'B2B Customer Dashboard')
+@section('title', 'My Bulk Quotes & RFQs - B2B Wholesale Portal')
 
 @section('content')
 <div class="container-fluid px-4 px-lg-5">
@@ -9,231 +9,209 @@
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb fs-7">
             <li class="breadcrumb-item"><a href="{{ route('frontend.home') }}">Home</a></li>
-            <li class="breadcrumb-item active" aria-current="page">B2B Account Dashboard</li>
+            <li class="breadcrumb-item"><a href="{{ route('frontend.account') }}">B2B Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">My Bulk Quotes</li>
         </ol>
     </nav>
 
     <div class="row g-4">
         
-        <!-- Account Navigation Sidebar -->
+        <!-- Sidebar Navigation -->
         <div class="col-lg-3">
             <div class="bg-white border rounded-4 shadow-sm p-4 sticky-top" style="top: 90px;">
                 <div class="text-center mb-4 pb-3 border-bottom">
                     <div class="b2b-cat-icon mx-auto mb-2 text-primary bg-primary-subtle" style="width: 60px; height: 60px; font-size: 1.5rem;">
                         <i class="fas fa-building"></i>
                     </div>
-                    <h6 class="font-weight-800 text-dark mb-0">{{ $customer['company'] }}</h6>
-                    <span class="fs-7 text-secondary">{{ $customer['name'] }}</span>
+                    <h6 class="font-weight-800 text-dark mb-0">{{ $customer['company'] ?? 'B2B Client' }}</h6>
+                    <span class="fs-7 text-secondary">{{ $customer['name'] ?? 'Procurement' }}</span>
                 </div>
 
                 <div class="list-group list-group-flush font-weight-600 fs-7">
-                    <a href="{{ route('frontend.account') }}" class="list-group-item list-group-item-action border-0 rounded-3 active bg-emerald mb-1">
-                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard Overview
+                    <a href="{{ route('frontend.account') }}" class="list-group-item list-group-item-action border-0 rounded-3 mb-1">
+                        <i class="fas fa-tachometer-alt me-2 text-primary"></i> Dashboard Overview
                     </a>
                     <a href="{{ route('frontend.orders.index') }}" class="list-group-item list-group-item-action border-0 rounded-3 mb-1">
                         <i class="fas fa-box-open me-2 text-info"></i> My Orders
                     </a>
-                    <a href="{{ route('frontend.quotes.index') }}" class="list-group-item list-group-item-action border-0 rounded-3 mb-1 d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-file-invoice-dollar me-2 text-warning"></i> My Quotes & RFQs</span>
-                        @if(count($quotes ?? []) > 0)
-                            <span class="badge bg-warning text-dark font-weight-700 rounded-pill">{{ count($quotes) }}</span>
-                        @endif
+                    <a href="{{ route('frontend.quotes.index') }}" class="list-group-item list-group-item-action border-0 rounded-3 active bg-emerald mb-1">
+                        <i class="fas fa-file-invoice-dollar me-2"></i> My Bulk Quotes & RFQs
+                    </a>
+                    <a href="{{ route('frontend.quotes.create') }}" class="list-group-item list-group-item-action border-0 rounded-3 mb-1 text-emerald">
+                        <i class="fas fa-plus-circle me-2"></i> Submit New RFQ
                     </a>
                     <a href="{{ route('frontend.account.wishlist') }}" class="list-group-item list-group-item-action border-0 rounded-3 mb-1">
                         <i class="fas fa-heart me-2 text-danger"></i> Saved Wishlist
                     </a>
                     <a href="{{ route('frontend.account.profile') }}" class="list-group-item list-group-item-action border-0 rounded-3 mb-1">
-                        <i class="fas fa-id-card me-2 text-primary"></i> Company Profile
+                        <i class="fas fa-id-card me-2 text-secondary"></i> Company Profile
                     </a>
-                    
-                    <form action="{{ route('frontend.logout') }}" method="POST" class="mt-3 pt-3 border-top">
-                        @csrf
-                        <button type="submit" class="btn btn-outline-danger btn-sm w-100 font-weight-700">
-                            <i class="fas fa-sign-out-alt me-1"></i> Log Out
-                        </button>
-                    </form>
                 </div>
             </div>
         </div>
 
-        <!-- Dashboard Content -->
+        <!-- Main Content area -->
         <div class="col-lg-9">
             
-            <!-- Dashboard Summary Stat Cards -->
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="font-weight-800 text-dark mb-1">My Bulk Quotes & Price Requests</h3>
+                    <p class="text-secondary fs-7 mb-0">Track live admin price quotes, review offered discounts, and convert approved quotes to orders</p>
+                </div>
+                <a href="{{ route('frontend.quotes.create') }}" class="btn b2b-btn-accent font-weight-700 shadow-sm">
+                    <i class="fas fa-plus me-1"></i> Submit New RFQ
+                </a>
+            </div>
+
+            <!-- RFQ Summary Metrics Bar -->
+            @php
+                $fqTotalCount = $quotes->count();
+                $fqTotalQty = $quotes->sum('quantity');
+                $fqApprovedCount = $quotes->filter(fn($q) => in_array(is_object($q) ? $q->status : ($q['status'] ?? ''), ['quoted', 'approved', 'Approved', 'Quote Offered']))->count();
+            @endphp
             <div class="row g-3 mb-4">
-                <div class="col-6 col-md-3">
-                    <div class="bg-white border rounded-4 p-4 text-center shadow-sm">
-                        <div class="fs-2 font-weight-800 text-primary mb-1">{{ $totalOrders }}</div>
-                        <div class="fs-7 text-secondary font-weight-600">Total Orders</div>
+                <div class="col-4">
+                    <div class="bg-white border rounded-4 p-3 text-center shadow-sm">
+                        <div class="fs-4 font-weight-800 text-primary">{{ number_format($fqTotalCount) }}</div>
+                        <div class="fs-8 text-secondary font-weight-700 uppercase">Total RFQs Submitted</div>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
-                    <div class="bg-white border rounded-4 p-4 text-center shadow-sm">
-                        <div class="fs-2 font-weight-800 text-warning mb-1">{{ $pendingOrders }}</div>
-                        <div class="fs-7 text-secondary font-weight-600">Active / Pending</div>
+                <div class="col-4">
+                    <div class="bg-white border rounded-4 p-3 text-center shadow-sm">
+                        <div class="fs-4 font-weight-800 text-purple" style="color: #6f42c1;">{{ number_format($fqTotalQty) }}</div>
+                        <div class="fs-8 text-secondary font-weight-700 uppercase">Total Requested Units</div>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
-                    <div class="bg-white border rounded-4 p-4 text-center shadow-sm">
-                        <div class="fs-2 font-weight-800 text-success mb-1">{{ $completedOrders }}</div>
-                        <div class="fs-7 text-secondary font-weight-600">Completed Orders</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="bg-white border rounded-4 p-4 text-center shadow-sm">
-                        <div class="fs-4 font-weight-800 text-emerald mb-1">${{ number_format($totalPurchase, 0) }}</div>
-                        <div class="fs-7 text-secondary font-weight-600">Total Spend</div>
+                <div class="col-4">
+                    <div class="bg-white border rounded-4 p-3 text-center shadow-sm">
+                        <div class="fs-4 font-weight-800 text-success">{{ number_format($fqApprovedCount) }}</div>
+                        <div class="fs-8 text-secondary font-weight-700 uppercase">Price Offers Ready</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Recent Orders Section -->
-            <div class="bg-white border rounded-4 shadow-sm p-4 mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="font-weight-800 text-dark mb-0"><i class="fas fa-box-open text-emerald me-2"></i> Recent Orders</h5>
-                    <a href="{{ route('frontend.orders.index') }}" class="btn btn-link text-emerald font-weight-700 text-decoration-none fs-7">
-                        View All Orders <i class="fas fa-arrow-right ms-1"></i>
-                    </a>
+            <!-- Flash Alert Messages -->
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show font-weight-600 fs-7 shadow-sm mb-4" role="alert">
+                    <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
+            @endif
 
-                @if(count($orders) > 0)
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show font-weight-600 fs-7 shadow-sm mb-4" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i> {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            <!-- Quotes Data Card -->
+            <div class="bg-white border rounded-4 shadow-sm p-4">
+                @if($quotes->count() > 0)
                     <div class="table-responsive">
                         <table class="table align-middle mb-0 fs-7">
                             <thead class="bg-light font-weight-700 text-secondary">
                                 <tr>
-                                    <th>Order ID</th>
-                                    <th>Date</th>
-                                    <th>Total</th>
-                                    <th>Status</th>
-                                    <th class="text-end">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach(array_slice($orders, 0, 5) as $ord)
-                                    <tr>
-                                        <td class="font-monospace font-weight-800 text-emerald">{{ $ord['id'] }}</td>
-                                        <td>{{ $ord['date'] }}</td>
-                                        <td class="font-weight-800 text-dark">${{ number_format($ord['total'], 2) }}</td>
-                                        <td><span class="badge bg-success font-weight-700">{{ $ord['status'] }}</span></td>
-                                        <td class="text-end">
-                                            <a href="{{ route('frontend.orders.show', $ord['id']) }}" class="btn btn-outline-dark btn-sm font-weight-600">
-                                                View
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <p class="text-secondary mb-0">No recent orders found.</p>
-                @endif
-            </div>
-
-            <!-- Recent Quotes Section -->
-            <div class="bg-white border rounded-4 shadow-sm p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="font-weight-800 text-dark mb-0"><i class="fas fa-file-invoice-dollar text-warning me-2"></i> Submitted Bulk Quotes</h5>
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('frontend.quotes.index') }}" class="btn btn-outline-primary btn-sm font-weight-700">
-                            View All Quotes <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
-                        <a href="{{ route('frontend.quotes.create') }}" class="btn b2b-btn-accent btn-sm font-weight-700">
-                            + New Quote RFQ
-                        </a>
-                    </div>
-                </div>
-
-                @if(count($quotes) > 0)
-                    <div class="table-responsive w-100">
-                        <table class="table table-hover align-middle mb-0 fs-7 w-100" style="min-width: 800px;">
-                            <thead>
-                                <tr class="bg-light text-secondary border-bottom">
-                                    <th class="py-3 px-3 text-nowrap font-weight-700 uppercase" style="width: 12%;">Quote ID</th>
-                                    <th class="py-3 px-3 text-nowrap font-weight-700 uppercase" style="width: 10%;">Date</th>
-                                    <th class="py-3 px-3 font-weight-700 uppercase" style="width: 38%;">Product Requested</th>
-                                    <th class="py-3 px-3 text-center text-nowrap font-weight-700 uppercase" style="width: 8%;">Qty</th>
-                                    <th class="py-3 px-3 text-end text-nowrap font-weight-700 uppercase" style="width: 14%;">Target / Offered</th>
-                                    <th class="py-3 px-3 text-center text-nowrap font-weight-700 uppercase" style="width: 10%;">Status</th>
-                                    <th class="py-3 px-3 text-end text-nowrap font-weight-700 uppercase" style="width: 8%;">Action</th>
+                                    <th class="text-nowrap">Quote ID</th>
+                                    <th class="text-nowrap">Date</th>
+                                    <th>Product Requested</th>
+                                    <th class="text-center text-nowrap">Qty</th>
+                                    <th class="text-end text-nowrap">Target / Offered</th>
+                                    <th class="text-center text-nowrap">Status</th>
+                                    <th class="text-end text-nowrap">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($quotes as $qt)
                                     @php
-                                        $qId = is_array($qt) ? ($qt['quote_number'] ?? $qt['id']) : ($qt->quote_number ?? $qt->id);
-                                        $qDate = is_array($qt) ? $qt['date'] : $qt->created_at->format('Y-m-d');
-                                        $pName = is_array($qt) ? $qt['product_name'] : $qt->product_name;
-                                        $qty = is_array($qt) ? $qt['quantity'] : $qt->quantity;
-                                        $targetPrice = is_array($qt) ? ($qt['target_price'] ?? null) : $qt->target_price;
-                                        $offeredPrice = is_array($qt) ? ($qt['offered_price'] ?? null) : $qt->offered_price;
-                                        $status = is_array($qt) ? ($qt['status'] ?? 'pending') : $qt->status;
-                                        $message = is_array($qt) ? ($qt['message'] ?? '') : ($qt->message ?? '');
-                                        $adminNotes = is_array($qt) ? ($qt['admin_notes'] ?? '') : ($qt->admin_notes ?? '');
-                                        $rawId = is_array($qt) ? $qId : $qt->id;
+                                        $qId = is_object($qt) ? ($qt->quote_number ?? $qt->id) : ($qt['quote_number'] ?? $qt['id']);
+                                        $qDate = is_object($qt) ? $qt->created_at->format('Y-m-d') : ($qt['date'] ?? date('Y-m-d'));
+                                        $pName = is_object($qt) ? $qt->product_name : $qt['product_name'];
+                                        $pShortName = \Illuminate\Support\Str::limit($pName, 35);
+                                        $qty = is_object($qt) ? $qt->quantity : $qt['quantity'];
+                                        $targetPrice = is_object($qt) ? $qt->target_price : ($qt['target_price'] ?? null);
+                                        $offeredPrice = is_object($qt) ? $qt->offered_price : ($qt['offered_price'] ?? null);
+                                        $status = is_object($qt) ? $qt->status : ($qt['status'] ?? 'pending');
+                                        $message = is_object($qt) ? $qt->message : ($qt['message'] ?? '');
+                                        $adminNotes = is_object($qt) ? $qt->admin_notes : ($qt['admin_notes'] ?? '');
+                                        $rawId = is_object($qt) ? $qt->id : $qId;
                                     @endphp
-                                    <tr class="border-bottom">
-                                        <td class="py-3 px-3 font-monospace font-weight-800 text-primary text-nowrap">
-                                            <a href="#" data-bs-toggle="modal" data-bs-target="#accQuoteModal_{{ $rawId }}" class="text-primary text-decoration-none hover-underline">
+                                    <tr>
+                                        <td class="font-monospace font-weight-800 text-primary text-nowrap">
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#quoteModal_{{ $rawId }}" class="text-primary text-decoration-none">
                                                 {{ $qId }}
                                             </a>
                                         </td>
-                                        <td class="py-3 px-3 text-nowrap text-secondary font-weight-500">{{ $qDate }}</td>
-                                        <td class="py-3 px-3">
-                                            <div class="font-weight-700 text-dark mb-1" style="line-height: 1.3;">{{ $pName }}</div>
-                                            <a href="#" data-bs-toggle="modal" data-bs-target="#accQuoteModal_{{ $rawId }}" class="text-primary text-decoration-none fs-8 font-weight-600">
-                                                <i class="fas fa-eye me-1"></i>View Full Request Details
+                                        <td class="text-nowrap text-secondary">{{ $qDate }}</td>
+                                        <td>
+                                            <div class="font-weight-700 text-dark">{{ $pShortName }}</div>
+                                            <a href="#" data-bs-toggle="modal" data-bs-target="#quoteModal_{{ $rawId }}" class="text-primary text-decoration-none fs-8 font-weight-600">
+                                                <i class="fas fa-eye me-1"></i>View Full Request
                                             </a>
                                         </td>
-                                        <td class="py-3 px-3 text-center font-weight-800 text-nowrap text-dark">{{ number_format($qty) }}</td>
-                                        <td class="py-3 px-3 text-end text-nowrap">
+                                        <td class="text-center font-weight-800 text-nowrap">{{ number_format($qty) }}</td>
+                                        <td class="text-end text-nowrap">
                                             @if($offeredPrice)
-                                                <div class="font-weight-800 text-success fs-6">${{ number_format($offeredPrice, 2) }} <span class="fs-8 text-secondary">/unit</span></div>
+                                                <div class="font-weight-800 text-success fs-6">${{ number_format($offeredPrice, 2) }} <span class="fs-8 text-secondary">/ unit</span></div>
+                                                @if($targetPrice)
+                                                    <div class="fs-8 text-secondary text-decoration-line-through">Target: ${{ number_format($targetPrice, 2) }}</div>
+                                                @endif
                                             @elseif($targetPrice)
                                                 <div class="font-weight-700 text-dark">${{ number_format($targetPrice, 2) }}</div>
                                                 <div class="fs-8 text-warning font-weight-600">Requested Target</div>
                                             @else
-                                                <span class="text-secondary">-</span>
+                                                <span class="text-secondary">Open Quote</span>
                                             @endif
                                         </td>
-                                        <td class="py-3 px-3 text-center text-nowrap">
+
+                                        <td class="text-center text-nowrap">
                                             @if(in_array($status, ['quoted', 'approved', 'Approved', 'Quote Offered']))
-                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill font-weight-700"><i class="fas fa-check-circle me-1"></i> Approved</span>
+                                                <span class="badge bg-success p-2 font-weight-700">
+                                                    <i class="fas fa-check-circle me-1"></i> Admin Approved
+                                                </span>
                                             @elseif(in_array($status, ['converted', 'Converted']))
-                                                <span class="badge bg-purple-subtle text-purple border border-purple-subtle px-3 py-2 rounded-pill font-weight-700" style="background-color: #f3ebff; color: #6f42c1; border-color: #e2d2fe;"><i class="fas fa-cart-check me-1"></i> Converted</span>
+                                                <span class="badge bg-purple text-white p-2 font-weight-700" style="background-color: #6f42c1;">
+                                                    <i class="fas fa-cart-check me-1"></i> Converted to Order
+                                                </span>
                                             @elseif(in_array($status, ['rejected', 'Rejected']))
-                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill font-weight-700"><i class="fas fa-times-circle me-1"></i> Declined</span>
+                                                <span class="badge bg-danger p-2 font-weight-700">
+                                                    <i class="fas fa-times-circle me-1"></i> Declined
+                                                </span>
                                             @else
-                                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 rounded-pill font-weight-700"><i class="fas fa-clock me-1"></i> Under Review</span>
+                                                <span class="badge bg-warning text-dark p-2 font-weight-700">
+                                                    <i class="fas fa-clock me-1"></i> Under Review
+                                                </span>
                                             @endif
                                         </td>
-                                        <td class="py-3 px-3 text-end text-nowrap">
-                                            <div class="d-flex align-items-center justify-content-end gap-2">
-                                                <button type="button" class="btn btn-sm btn-outline-secondary font-weight-600 rounded-3" data-bs-toggle="modal" data-bs-target="#accQuoteModal_{{ $rawId }}" title="View Request Details">
-                                                    <i class="fas fa-eye me-1"></i> Details
+
+                                        <td class="text-end text-nowrap">
+                                            <div class="d-flex items-center justify-content-end gap-1">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm font-weight-600" data-bs-toggle="modal" data-bs-target="#quoteModal_{{ $rawId }}" title="View Request Details">
+                                                    <i class="fas fa-eye"></i> Details
                                                 </button>
 
                                                 @if(in_array($status, ['quoted', 'approved', 'Approved', 'Quote Offered']))
-                                                    <form action="{{ route('frontend.quotes.accept', $rawId) }}" method="POST" class="d-inline" onsubmit="return confirm('Accept quote offer and order {{ number_format($qty) }} units?');">
+                                                    <form action="{{ route('frontend.quotes.accept', $rawId) }}" method="POST" class="d-inline" onsubmit="return confirm('Accept this quote offer and place a Wholesale Order for {{ number_format($qty) }} units?');">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-emerald btn-sm font-weight-700 rounded-3 shadow-sm">
+                                                        <button type="submit" class="btn btn-emerald btn-sm font-weight-700 shadow-sm">
                                                             <i class="fas fa-cart-plus me-1"></i> Accept & Order
                                                         </button>
                                                     </form>
                                                 @elseif(in_array($status, ['converted', 'Converted']))
-                                                    <span class="text-success font-weight-700 fs-8"><i class="fas fa-check me-1"></i> Placed</span>
+                                                    <span class="text-success font-weight-700 fs-8 ms-1"><i class="fas fa-check me-1"></i> Order Placed</span>
                                                 @endif
                                             </div>
                                         </td>
                                     </tr>
 
-                                    <!-- Quote Modal for account index -->
-                                    <div class="modal fade" id="accQuoteModal_{{ $rawId }}" tabindex="-1" aria-labelledby="accQuoteModalLabel_{{ $rawId }}" aria-hidden="true">
+                                    <!-- Quote Details Modal for this row -->
+                                    <div class="modal fade" id="quoteModal_{{ $rawId }}" tabindex="-1" aria-labelledby="quoteModalLabel_{{ $rawId }}" aria-hidden="true">
                                         <div class="modal-dialog modal-dialog-centered modal-lg">
                                             <div class="modal-content border-0 rounded-4 shadow-lg">
                                                 <div class="modal-header bg-light border-bottom p-4">
                                                     <div>
-                                                        <h5 class="modal-title font-weight-800 text-dark mb-1" id="accQuoteModalLabel_{{ $rawId }}">
+                                                        <h5 class="modal-title font-weight-800 text-dark mb-1" id="quoteModalLabel_{{ $rawId }}">
                                                             Quote Request #{{ $qId }}
                                                         </h5>
                                                         <span class="fs-7 text-secondary">Submitted on {{ $qDate }}</span>
@@ -277,6 +255,9 @@
                                                             <div class="p-3 rounded-3 border bg-primary-subtle text-primary">
                                                                 <span class="fs-8 font-weight-700 uppercase">Target Price Requested</span>
                                                                 <h5 class="font-weight-800 mt-1 mb-0">{{ $targetPrice ? '$' . number_format($targetPrice, 2) . ' / unit' : 'Open Target' }}</h5>
+                                                                @if($targetPrice)
+                                                                    <div class="fs-8 font-weight-700 mt-1">Est. Target Subtotal: ${{ number_format($targetPrice * $qty, 2) }}</div>
+                                                                @endif
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
@@ -299,7 +280,7 @@
 
                                                     @if($adminNotes)
                                                         <div class="mb-3">
-                                                            <h6 class="fs-7 font-weight-800 text-success mb-2"><i class="fas fa-comment-dots me-1"></i> Admin Response Notes</h6>
+                                                            <h6 class="fs-7 font-weight-800 text-success mb-2"><i class="fas fa-comment-dots me-1"></i> Admin Notes & Response</h6>
                                                             <div class="p-3 bg-success-subtle text-success-emphasis rounded-3 fs-7 font-weight-500 whitespace-pre-line">{{ $adminNotes }}</div>
                                                         </div>
                                                     @endif
@@ -323,7 +304,14 @@
                         </table>
                     </div>
                 @else
-                    <p class="text-secondary mb-0">No active quote requests.</p>
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-invoice-dollar text-secondary opacity-25 mb-3" style="font-size: 3.5rem;"></i>
+                        <h6 class="font-weight-800 text-dark">No Quote Requests Found</h6>
+                        <p class="text-secondary fs-7 mb-3">You haven't submitted any bulk quote inquiries yet.</p>
+                        <a href="{{ route('frontend.quotes.create') }}" class="btn b2b-btn-accent btn-sm font-weight-700">
+                            Submit Your First RFQ
+                        </a>
+                    </div>
                 @endif
             </div>
 

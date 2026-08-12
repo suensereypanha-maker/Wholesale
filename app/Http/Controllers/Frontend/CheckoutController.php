@@ -147,6 +147,7 @@ class CheckoutController extends Controller
                 'order_number' => $orderNumber,
                 'customer_id' => $customer->id,
                 'user_id' => Auth::id(),
+                'order_source' => 'frontend',
                 'status' => 'pending',
                 'payment_status' => 'unpaid',
                 'payment_terms' => $request->payment_method,

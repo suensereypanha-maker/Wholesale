@@ -10,7 +10,6 @@ class FrontendData
     public static function categories()
     {
         $products = static::products();
-        $counts = array_count_values(array_column($products, 'category_slug'));
 
         $items = [
             ['name' => 'Laptop', 'slug' => 'laptop', 'icon' => 'fas fa-laptop', 'description' => 'Business, Enterprise, and Ultrabook Laptops'],
@@ -33,8 +32,14 @@ class FrontendData
             ['name' => 'Accessories', 'slug' => 'accessories', 'icon' => 'fas fa-plug', 'description' => 'Docking Stations, Cables, Adapters & Mounts'],
         ];
 
-        return array_map(function ($item) use ($counts) {
-            $item['count'] = $counts[$item['slug']] ?? 0;
+        return array_map(function ($item) use ($products) {
+            $slug = $item['slug'];
+            $count = collect($products)->filter(function ($p) use ($slug) {
+                $cSlug = strtolower($p['category_slug'] ?? '');
+                $cName = strtolower($p['category'] ?? '');
+                return $cSlug === $slug || str_contains($cSlug, $slug) || str_contains($slug, $cSlug) || str_contains($cName, $slug);
+            })->count();
+            $item['count'] = $count;
             return $item;
         }, $items);
     }
@@ -45,7 +50,6 @@ class FrontendData
     public static function brands()
     {
         $products = static::products();
-        $counts = array_count_values(array_column($products, 'brand_slug'));
 
         $items = [
             ['name' => 'Dell', 'slug' => 'dell', 'logo' => 'DELL', 'icon' => 'fas fa-laptop', 'tagline' => 'Enterprise Laptops & Servers', 'accent' => '#007db8'],
@@ -64,25 +68,94 @@ class FrontendData
             ['name' => 'Epson', 'slug' => 'epson', 'logo' => 'EPSON', 'icon' => 'fas fa-copy', 'tagline' => 'WorkForce Scanners', 'accent' => '#003399'],
         ];
 
-        return array_map(function ($item) use ($counts) {
-            $item['count'] = $counts[$item['slug']] ?? 0;
+        return array_map(function ($item) use ($products) {
+            $slug = $item['slug'];
+            $count = collect($products)->filter(function ($p) use ($slug) {
+                $bSlug = strtolower($p['brand_slug'] ?? '');
+                $bName = strtolower($p['brand'] ?? '');
+                return $bSlug === $slug || str_contains($bSlug, $slug) || str_contains($slug, $bSlug) || str_contains($bName, $slug);
+            })->count();
+            $item['count'] = $count;
             return $item;
         }, $items);
     }
 
     /**
+     * Normalize raw category name to standard category metadata.
+     */
+    protected static function normalizeCategory(string $category): array
+    {
+        $catLower = strtolower(trim($category));
+        if (str_contains($catLower, 'cpu') || str_contains($catLower, 'processor')) {
+            return ['name' => 'CPU', 'slug' => 'cpu'];
+        }
+        if (str_contains($catLower, 'gpu') || str_contains($catLower, 'graphics')) {
+            return ['name' => 'GPU', 'slug' => 'gpu'];
+        }
+        if (str_contains($catLower, 'ram') || str_contains($catLower, 'memory')) {
+            return ['name' => 'RAM', 'slug' => 'ram'];
+        }
+        if (str_contains($catLower, 'ssd') || str_contains($catLower, 'solid state')) {
+            return ['name' => 'SSD', 'slug' => 'ssd'];
+        }
+        if (str_contains($catLower, 'hdd') || str_contains($catLower, 'hard drive')) {
+            return ['name' => 'HDD', 'slug' => 'hdd'];
+        }
+        if (str_contains($catLower, 'laptop') || str_contains($catLower, 'notebook')) {
+            return ['name' => 'Laptop', 'slug' => 'laptop'];
+        }
+        if (str_contains($catLower, 'desktop') || str_contains($catLower, 'pc')) {
+            return ['name' => 'Desktop', 'slug' => 'desktop'];
+        }
+        if (str_contains($catLower, 'gaming')) {
+            return ['name' => 'Gaming PC', 'slug' => 'gaming-pc'];
+        }
+        if (str_contains($catLower, 'workstation')) {
+            return ['name' => 'Workstation', 'slug' => 'workstation'];
+        }
+        if (str_contains($catLower, 'motherboard') || str_contains($catLower, 'mainboard')) {
+            return ['name' => 'Motherboard', 'slug' => 'motherboard'];
+        }
+        if (str_contains($catLower, 'monitor') || str_contains($catLower, 'display')) {
+            return ['name' => 'Monitor', 'slug' => 'monitor'];
+        }
+        if (str_contains($catLower, 'router') || str_contains($catLower, 'wifi')) {
+            return ['name' => 'Router', 'slug' => 'router'];
+        }
+        if (str_contains($catLower, 'switch')) {
+            return ['name' => 'Switch', 'slug' => 'switch'];
+        }
+        if (str_contains($catLower, 'printer')) {
+            return ['name' => 'Printer', 'slug' => 'printer'];
+        }
+        return ['name' => $category, 'slug' => \Illuminate\Support\Str::slug($category)];
+    }
+
+    /**
      * Extract brand name from product name or details.
      */
-    protected static function extractBrandName(string $name): string
+    protected static function extractBrandName(string $name, $stock = null): string
     {
+        $searchContext = $name;
+        if ($stock) {
+            if (is_object($stock)) {
+                $searchContext .= ' ' . ($stock->sku ?? '') . ' ' . json_encode($stock->details ?? []);
+            } elseif (is_array($stock)) {
+                $searchContext .= ' ' . ($stock['sku'] ?? '') . ' ' . json_encode($stock['details'] ?? $stock['specifications'] ?? []);
+            }
+        }
         $knownBrands = ['Dell', 'HP', 'Lenovo', 'ASUS', 'Acer', 'MSI', 'Intel', 'AMD', 'NVIDIA', 'Samsung', 'Logitech', 'TP-Link', 'Canon', 'Epson', 'APC', 'Seagate', 'Kingston'];
         foreach ($knownBrands as $brand) {
-            if (stripos($name, $brand) !== false) {
+            if (stripos($searchContext, $brand) !== false) {
                 return $brand;
             }
         }
         $words = explode(' ', trim($name));
-        return $words[0] ?? 'General';
+        $firstWord = $words[0] ?? 'General';
+        if (in_array(strtoupper($firstWord), ['CPU', 'GPU', 'RAM', 'SSD', 'HDD'])) {
+            return 'Intel';
+        }
+        return $firstWord;
     }
 
     /**
@@ -90,13 +163,15 @@ class FrontendData
      */
     public static function products()
     {
+        $allProducts = [];
+
         try {
             if (class_exists(\App\Models\Stock::class) && \App\Models\Stock::count() > 0) {
                 $stocks = \App\Models\Stock::orderBy('id', 'asc')->get();
-                $dbProducts = [];
 
                 foreach ($stocks as $stock) {
-                    $brandName = $stock->details['brand'] ?? static::extractBrandName($stock->product_name);
+                    $brandName = $stock->details['brand'] ?? static::extractBrandName($stock->product_name, $stock);
+                    $catMeta = static::normalizeCategory($stock->category ?? 'General');
                     
                     $wholesalePrices = [];
                     if (!empty($stock->tier_prices) && is_array($stock->tier_prices)) {
@@ -119,14 +194,14 @@ class FrontendData
                         ];
                     }
 
-                    $dbProducts[] = [
+                    $allProducts[] = [
                         'id' => $stock->id,
                         'sku' => $stock->sku,
                         'name' => $stock->product_name,
                         'brand' => $brandName,
                         'brand_slug' => \Illuminate\Support\Str::slug($brandName),
-                        'category' => $stock->category ?? 'General',
-                        'category_slug' => \Illuminate\Support\Str::slug($stock->category ?? 'General'),
+                        'category' => $catMeta['name'],
+                        'category_slug' => $catMeta['slug'],
                         'description' => $stock->short_description ?? $stock->description ?? 'High quality commercial wholesale product.',
                         'price' => (float) ($stock->retail_price > 0 ? $stock->retail_price : $stock->unit_cost),
                         'stock' => (int) $stock->quantity,
@@ -142,16 +217,24 @@ class FrontendData
                         'wholesalePrices' => $wholesalePrices,
                     ];
                 }
-
-                if (!empty($dbProducts)) {
-                    return $dbProducts;
-                }
             }
         } catch (\Throwable $e) {
             // DB fallback
         }
 
-        return static::fallbackProducts();
+        // Merge fallback products so catalog is rich and covers all categories/brands
+        $existingIds = array_column($allProducts, 'id');
+        $existingSkus = array_column($allProducts, 'sku');
+
+        foreach (static::fallbackProducts() as $fallback) {
+            $fId = $fallback['id'] + 100;
+            if (!in_array($fallback['id'], $existingIds) && !in_array($fallback['sku'], $existingSkus)) {
+                $fallback['id'] = $fId;
+                $allProducts[] = $fallback;
+            }
+        }
+
+        return $allProducts;
     }
 
     /**

@@ -18,7 +18,14 @@
                     <i class="fas {{ $isCustomer ? 'fa-id-card' : 'fa-users-gear' }} text-xl"></i>
                 </span>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">{{ $isCustomer ? 'Customers Register' : 'User Management' }}</h1>
+                    <div class="flex items-center gap-2.5">
+                        <h1 class="text-xl font-bold text-slate-900 tracking-tight">{{ $isCustomer ? 'Customers Register' : 'User Management' }}</h1>
+                        @if($pendingUsers > 0)
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-500 text-white animate-pulse shadow-2xs">
+                                {{ $pendingUsers }} Pending {{ Str::plural('Request', $pendingUsers) }}
+                            </span>
+                        @endif
+                    </div>
                     <p class="text-xs text-slate-500">
                         {{ $isCustomer ? 'Manage and approve B2B customer accounts registered from the storefront' : 'Manage administrator accounts, user registration approvals, roles, and permissions' }}
                     </p>

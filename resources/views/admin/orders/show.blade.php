@@ -2,6 +2,44 @@
 
 @section('title', 'Order ' . $order->order_number . ' - Wholesale Workspace')
 
+@push('styles')
+<style>
+@media print {
+    aside, 
+    header, 
+    footer, 
+    .no-print, 
+    button, 
+    .print\:hidden,
+    #sidebarBackdrop,
+    #adminSidebar {
+        display: none !important;
+    }
+
+    #mainContentWrapper {
+        padding-left: 0 !important;
+    }
+
+    main {
+        padding: 0 !important;
+    }
+
+    body {
+        background-color: #ffffff !important;
+    }
+
+    .shadow-xs, .shadow-sm, .shadow {
+        box-shadow: none !important;
+    }
+
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
+</style>
+@endpush
+
 @section('content')
 <div class="space-y-6 max-w-5xl mx-auto">
     <!-- Header -->
@@ -16,8 +54,8 @@
             </div>
             <p class="text-xs text-slate-500 mt-1">Placed on {{ $order->order_date ? $order->order_date->format('F d, Y \a\t h:i A') : 'N/A' }}</p>
         </div>
-        <div class="flex items-center gap-3">
-            <a href="{{ route('admin.orders.index') }}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors">
+        <div class="flex items-center gap-3 print:hidden no-print">
+            <a href="{{ $order->order_source === 'frontend' ? route('admin.orders.registered') : route('admin.orders.index') }}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors">
                 <i class="fas fa-arrow-left mr-1"></i> Back to Orders
             </a>
             <a href="{{ route('admin.orders.edit', $order->id) }}" class="px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold rounded-xl border border-amber-200 transition-colors">
@@ -37,7 +75,7 @@
     </div>
 
     <!-- Quick Status Update Card -->
-    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs print:hidden no-print">
         <form action="{{ route('admin.orders.update-status', $order->id) }}" method="POST" class="flex flex-col sm:flex-row items-center justify-between gap-4">
             @csrf
             @method('PATCH')

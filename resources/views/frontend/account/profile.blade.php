@@ -3,7 +3,7 @@
 @section('title', 'Company Profile - B2B Wholesale')
 
 @section('content')
-<div class="container">
+<div class="container-fluid px-4 px-lg-5">
     
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">

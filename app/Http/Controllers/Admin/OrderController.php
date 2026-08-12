@@ -18,7 +18,10 @@ class OrderController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Order::with('customer', 'items');
+        $query = Order::where(function ($q) {
+            $q->where('order_source', 'admin')
+              ->orWhereNull('order_source');
+        })->with('customer', 'items');
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -42,13 +45,18 @@ class OrderController extends Controller
 
         $orders = $query->latest('order_date')->paginate(10)->withQueryString();
 
-        // Metrics & KPI summaries
-        $totalOrdersCount = Order::count();
-        $pendingOrdersCount = Order::where('status', 'pending')->count();
-        $processingOrdersCount = Order::where('status', 'processing')->count();
-        $shippedOrdersCount = Order::where('status', 'shipped')->count();
-        $deliveredOrdersCount = Order::where('status', 'delivered')->count();
-        $totalSalesAmount = Order::sum('total_amount');
+        // Metrics & KPI summaries for Wholesale Partner Orders
+        $adminQuery = Order::where(function ($q) {
+            $q->where('order_source', 'admin')
+              ->orWhereNull('order_source');
+        });
+
+        $totalOrdersCount = (clone $adminQuery)->count();
+        $pendingOrdersCount = (clone $adminQuery)->where('status', 'pending')->count();
+        $processingOrdersCount = (clone $adminQuery)->where('status', 'processing')->count();
+        $shippedOrdersCount = (clone $adminQuery)->where('status', 'shipped')->count();
+        $deliveredOrdersCount = (clone $adminQuery)->where('status', 'delivered')->count();
+        $totalSalesAmount = (clone $adminQuery)->sum('total_amount');
 
         return view('admin.orders.index', compact(
             'orders',
@@ -83,6 +91,7 @@ class OrderController extends Controller
         $validated = $request->validate([
             'order_number' => 'required|string|max:50|unique:orders,order_number',
             'customer_id' => 'required|exists:customers,id',
+            'order_source' => 'nullable|string|in:admin,frontend',
             'payment_terms' => 'required|string|max:100',
             'status' => 'required|string|in:pending,processing,shipped,delivered,cancelled',
             'payment_status' => 'required|string|in:unpaid,partially_paid,paid',
@@ -112,16 +121,31 @@ class OrderController extends Controller
             ];
         }
 
+        // Validate stock quantity availability
+        foreach ($validated['items'] as $item) {
+            if (!empty($item['stock_id'])) {
+                $stock = Stock::find($item['stock_id']);
+                if ($stock && $item['quantity'] > $stock->quantity) {
+                    return back()->withInput()->withErrors([
+                        'items' => "⚠️ Stock Alert: Requested quantity ({$item['quantity']}) for '{$stock->product_name}' exceeds available stock ({$stock->quantity})."
+                    ]);
+                }
+            }
+        }
+
         // Apply customer's Wholesale discount percentage
         $discountPercent = $customer->wholesale_discount ?? 0;
         $discountAmount = round(($subtotal * $discountPercent) / 100, 2);
         $taxAmount = round(($subtotal - $discountAmount) * 0.05, 2); // 5% standard tax
         $totalAmount = round($subtotal - $discountAmount + $taxAmount, 2);
 
+        $orderSource = $validated['order_source'] ?? 'admin';
+
         $order = Order::create([
             'order_number' => $validated['order_number'],
             'customer_id' => $customer->id,
             'user_id' => auth()->id(),
+            'order_source' => $orderSource,
             'status' => $validated['status'],
             'payment_status' => $validated['payment_status'],
             'payment_terms' => $validated['payment_terms'],
@@ -151,7 +175,9 @@ class OrderController extends Controller
         $customer->increment('total_orders');
         $customer->increment('total_spent', $totalAmount);
 
-        return redirect()->route('admin.orders.index')
+        $redirectRoute = $orderSource === 'frontend' ? 'admin.orders.registered' : 'admin.orders.index';
+
+        return redirect()->route($redirectRoute)
             ->with('success', "B2B Wholesale Order '{$order->order_number}' for {$customer->name} ({$customer->company_name}) created successfully.");
     }
 
@@ -160,7 +186,7 @@ class OrderController extends Controller
      */
     public function registeredOrders(Request $request): View
     {
-        $query = Order::whereNotNull('user_id')->with('customer', 'items', 'user');
+        $query = Order::where('order_source', 'frontend')->with('customer', 'items', 'user');
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -188,12 +214,14 @@ class OrderController extends Controller
 
         $orders = $query->latest('order_date')->paginate(10)->withQueryString();
 
-        $totalOrdersCount = Order::whereNotNull('user_id')->count();
-        $pendingOrdersCount = Order::whereNotNull('user_id')->where('status', 'pending')->count();
-        $processingOrdersCount = Order::whereNotNull('user_id')->where('status', 'processing')->count();
-        $shippedOrdersCount = Order::whereNotNull('user_id')->where('status', 'shipped')->count();
-        $deliveredOrdersCount = Order::whereNotNull('user_id')->where('status', 'delivered')->count();
-        $totalSalesAmount = Order::whereNotNull('user_id')->sum('total_amount');
+        $frontendQuery = Order::where('order_source', 'frontend');
+
+        $totalOrdersCount = (clone $frontendQuery)->count();
+        $pendingOrdersCount = (clone $frontendQuery)->where('status', 'pending')->count();
+        $processingOrdersCount = (clone $frontendQuery)->where('status', 'processing')->count();
+        $shippedOrdersCount = (clone $frontendQuery)->where('status', 'shipped')->count();
+        $deliveredOrdersCount = (clone $frontendQuery)->where('status', 'delivered')->count();
+        $totalSalesAmount = (clone $frontendQuery)->sum('total_amount');
 
         $isCustomerRegisterOrders = true;
 
@@ -273,6 +301,18 @@ class OrderController extends Controller
             ];
         }
 
+        // Validate stock quantity availability
+        foreach ($validated['items'] as $item) {
+            if (!empty($item['stock_id'])) {
+                $stock = Stock::find($item['stock_id']);
+                if ($stock && $item['quantity'] > $stock->quantity) {
+                    return back()->withInput()->withErrors([
+                        'items' => "⚠️ Stock Alert: Requested quantity ({$item['quantity']}) for '{$stock->product_name}' exceeds available stock ({$stock->quantity})."
+                    ]);
+                }
+            }
+        }
+
         $discountPercent = $customer->wholesale_discount ?? 0;
         $discountAmount = round(($subtotal * $discountPercent) / 100, 2);
         $taxAmount = round(($subtotal - $discountAmount) * 0.05, 2);
@@ -306,6 +346,7 @@ class OrderController extends Controller
     {
         $order = Order::with('items')->findOrFail($id);
         $orderNumber = $order->order_number;
+        $isFrontend = ($order->order_source === 'frontend');
 
         // Restore stock quantities
         foreach ($order->items as $item) {
@@ -316,7 +357,9 @@ class OrderController extends Controller
 
         $order->delete();
 
-        return redirect()->route('admin.orders.index')
+        $redirectRoute = $isFrontend ? 'admin.orders.registered' : 'admin.orders.index';
+
+        return redirect()->route($redirectRoute)
             ->with('success', "Order #{$orderNumber} deleted successfully.");
     }
 

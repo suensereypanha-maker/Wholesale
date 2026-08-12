@@ -176,6 +176,6 @@ class DashboardController extends Controller
             ],
         ];
 
-        return view('admin.dashboard.dashboard', compact('stats', 'recentOrders', 'topBuyers', 'lowStockAlerts'));
+        return view('admin.dashboard.dashboard', compact('stats', 'recentOrders', 'topBuyers', 'lowStockAlerts', 'pendingUserCount'));
     }
 }

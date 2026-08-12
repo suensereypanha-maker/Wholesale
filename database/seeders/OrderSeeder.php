@@ -16,11 +16,6 @@ class OrderSeeder extends Seeder
      */
     public function run(): void
     {
-        Schema::disableForeignKeyConstraints();
-        OrderItem::truncate();
-        Order::truncate();
-        Schema::enableForeignKeyConstraints();
-
         $customers = Customer::all();
         $stocks = Stock::all();
 
@@ -78,6 +73,10 @@ class OrderSeeder extends Seeder
         ];
 
         foreach ($sampleOrders as $orderData) {
+            if (Order::where('order_number', $orderData['order_number'])->exists()) {
+                continue;
+            }
+
             $customer = $customers->firstWhere('customer_code', $orderData['customer_code']) ?? $customers->first();
 
             $subtotal = 0;
@@ -106,6 +105,7 @@ class OrderSeeder extends Seeder
             $order = Order::create([
                 'order_number' => $orderData['order_number'],
                 'customer_id' => $customer->id,
+                'order_source' => 'admin',
                 'status' => $orderData['status'],
                 'payment_status' => $orderData['payment_status'],
                 'payment_terms' => $orderData['payment_terms'] ?? $customer->payment_terms,

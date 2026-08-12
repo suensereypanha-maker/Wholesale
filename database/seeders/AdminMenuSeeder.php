@@ -73,7 +73,7 @@ class AdminMenuSeeder extends Seeder
                 'section'     => 'B2B Commerce & Sales',
                 'title'       => 'Quotes & Inquiries',
                 'icon'        => 'fas fa-handshake-angle',
-                'url'         => '#',
+                'route'       => 'admin.quotes.index',
                 'permission'  => 'manage_orders',
                 'order'       => 5,
             ],
@@ -112,30 +112,43 @@ class AdminMenuSeeder extends Seeder
                 'order'      => 9,
             ],
 
-            // Client Accounts Section
+            // Reports Section
             [
-                'section'    => 'Client Accounts',
-                'title'      => 'B2B Clients',
-                'icon'       => 'fas fa-users-gear',
-                'route'      => 'admin.customers.index',
-                'permission' => 'manage_users',
-                'order'      => 10,
-            ],
-            [
-                'section'     => 'Client Accounts',
-                'title'       => 'Buyer Approvals',
-                'icon'        => 'fas fa-user-check',
-                'route'       => 'admin.customers.register',
-                'permission'  => 'manage_users',
-                'order'       => 11,
-            ],
-            [
-                'section'    => 'Client Accounts',
-                'title'      => 'Credit Terms & Limits',
-                'icon'       => 'fas fa-credit-card',
-                'url'        => '#',
-                'permission' => 'manage_users',
-                'order'      => 12,
+                'section'     => 'Reports',
+                'title'       => 'Report Menu',
+                'icon'        => 'fas fa-chart-pie',
+                'permission'  => 'view_reports',
+                'order'       => 10,
+                'children'    => [
+                    [
+                        'title'      => 'Sales & Revenue',
+                        'icon'       => 'fas fa-chart-line',
+                        'route'      => 'admin.reports.sales',
+                        'permission' => 'view_reports',
+                        'order'      => 1,
+                    ],
+                    [
+                        'title'      => 'Inventory Reports',
+                        'icon'       => 'fas fa-boxes-stacked',
+                        'route'      => 'admin.reports.inventory',
+                        'permission' => 'view_reports',
+                        'order'      => 2,
+                    ],
+                    [
+                        'title'      => 'Customer Reports',
+                        'icon'       => 'fas fa-users-gear',
+                        'route'      => 'admin.reports.customers',
+                        'permission' => 'view_reports',
+                        'order'      => 3,
+                    ],
+                    [
+                        'title'      => 'Quotes & Conversion',
+                        'icon'       => 'fas fa-handshake-angle',
+                        'route'      => 'admin.reports.quotes',
+                        'permission' => 'view_reports',
+                        'order'      => 4,
+                    ],
+                ]
             ],
 
             // Inventory & Logistics Section

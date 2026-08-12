@@ -2,6 +2,79 @@
 
 @section('title', 'Order Details - ' . $order['id'])
 
+@push('styles')
+<style>
+@media print {
+    /* Hide topbar, headers, footers, navigation, breadcrumbs, and print/back buttons */
+    header, 
+    footer, 
+    nav, 
+    .b2b-topbar, 
+    .b2b-navbar, 
+    .breadcrumb, 
+    .d-print-none, 
+    .no-print, 
+    .btn, 
+    button,
+    #mobileMenuOffcanvas,
+    .toast-container {
+        display: none !important;
+    }
+
+    body, html {
+        background: #ffffff !important;
+        color: #000000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    main {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .container, .container-fluid {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .printable-invoice-card {
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        padding: 24px !important;
+        border-radius: 12px !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+    }
+
+    /* Preserve colors and badges when printing */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .table {
+        border-color: #cbd5e1 !important;
+    }
+
+    .bg-light {
+        background-color: #f8fafc !important;
+    }
+
+    .table-responsive {
+        overflow: visible !important;
+    }
+    
+    tr {
+        page-break-inside: avoid;
+    }
+}
+</style>
+@endpush
+
 @section('content')
 @php
     $isObject = is_object($order);
@@ -21,10 +94,10 @@
     $itemsList = $isObject ? $order->items : ($order['items'] ?? []);
 @endphp
 
-<div class="container">
+<div class="container-fluid px-4 px-lg-5">
     
     <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
+    <nav aria-label="breadcrumb" class="mb-4 d-print-none">
         <ol class="breadcrumb fs-7">
             <li class="breadcrumb-item"><a href="{{ route('frontend.home') }}">Home</a></li>
             <li class="breadcrumb-item"><a href="{{ route('frontend.orders.index') }}">My Orders</a></li>
@@ -32,15 +105,23 @@
         </ol>
     </nav>
 
-    <!-- Header Card -->
-    <div class="bg-white border rounded-4 shadow-sm p-4 mb-4">
+    <!-- Header Card / Printable Invoice -->
+    <div class="bg-white border rounded-4 shadow-sm p-4 mb-4 printable-invoice-card">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 border-bottom pb-3 mb-4">
             <div>
                 <span class="badge bg-emerald-subtle text-emerald border border-emerald font-weight-700 px-3 py-1 rounded-pill mb-1">Commercial Wholesale Invoice</span>
                 <h1 class="h2 font-weight-800 text-dark mb-0">Order: <span class="text-emerald font-monospace">{{ $orderNum }}</span></h1>
                 <div class="fs-7 text-secondary">Placed on {{ $orderDate }}</div>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 d-print-none">
+                @if(strtolower($isObject ? ($order->status ?? '') : ($order['status'] ?? '')) === 'pending')
+                    <form action="{{ route('frontend.orders.cancel', $orderNum) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this order request?');">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger font-weight-600">
+                            <i class="fas fa-times-circle me-1"></i> Cancel Request
+                        </button>
+                    </form>
+                @endif
                 <button onclick="window.print()" class="btn btn-outline-dark font-weight-600">
                     <i class="fas fa-print me-1"></i> Print Invoice
                 </button>

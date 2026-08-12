@@ -14,7 +14,42 @@ class AccountController extends Controller
         $user = Auth::user();
         $customer = $user ? $user->toArray() : session()->get('frontend_customer', FrontendData::sampleCustomer());
         $orders = session()->get('frontend_orders', FrontendData::sampleOrders());
-        $quotes = session()->get('frontend_quotes', FrontendData::sampleQuotes());
+
+        // Fetch DB quotes or fallback to sample quotes
+        if ($user) {
+            $dbQuotes = \App\Models\Quote::with('stock')
+                ->where('user_id', $user->id)
+                ->orWhere('email', $user->email)
+                ->latest()
+                ->get();
+        } else {
+            $customerEmail = session()->get('frontend_customer.email', 'info@ccycompany.com');
+            $dbQuotes = \App\Models\Quote::with('stock')
+                ->where('email', $customerEmail)
+                ->orWhereNull('user_id')
+                ->latest()
+                ->get();
+        }
+
+        if ($dbQuotes->isNotEmpty()) {
+            $quotes = $dbQuotes->map(function ($q) {
+                return [
+                    'id' => $q->id,
+                    'quote_number' => $q->quote_number,
+                    'date' => $q->created_at->format('Y-m-d'),
+                    'product_name' => $q->product_name,
+                    'quantity' => $q->quantity,
+                    'target_price' => $q->target_price,
+                    'offered_price' => $q->offered_price,
+                    'status' => $q->status,
+                    'status_label' => $q->status_label,
+                    'status_badge' => $q->status_badge,
+                    'message' => $q->message,
+                ];
+            })->toArray();
+        } else {
+            $quotes = session()->get('frontend_quotes', FrontendData::sampleQuotes());
+        }
 
         $totalOrders = count($orders);
         $pendingOrders = count(array_filter($orders, fn($o) => in_array($o['status'], ['Pending', 'Confirmed', 'Processing', 'Packed'])));

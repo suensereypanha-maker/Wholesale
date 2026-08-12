@@ -15,9 +15,9 @@
             </h1>
             <p class="text-sm text-slate-500 mt-1">Modify order details, items, fulfillment status, and payment terms</p>
         </div>
-        <a href="{{ route('admin.orders.show', $order->id) }}" class="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors">
+        <a href="{{ $order->order_source === 'frontend' ? route('admin.orders.registered') : route('admin.orders.show', $order->id) }}" class="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors">
             <i class="fas fa-arrow-left"></i>
-            <span>Back to Details</span>
+            <span>Back</span>
         </a>
     </div>
 
@@ -27,7 +27,7 @@
         @method('PUT')
 
         <!-- Order Basic Details -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Order Number</label>
                 <input 
@@ -36,6 +36,14 @@
                     disabled
                     class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-500 cursor-not-allowed"
                 />
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Order Source</label>
+                <div class="px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-2">
+                    <i class="fas {{ $order->order_source === 'frontend' ? 'fa-globe text-purple-600' : 'fa-handshake text-indigo-600' }}"></i>
+                    <span>{{ $order->order_source === 'frontend' ? 'Frontend Order' : 'Partner Order' }}</span>
+                </div>
             </div>
 
             <div class="sm:col-span-2">
@@ -104,40 +112,57 @@
                 </button>
             </div>
 
-            <!-- Items Table/List Container -->
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3" id="itemsContainer">
-                @foreach($order->items as $index => $item)
-                    <div class="item-row grid grid-cols-1 sm:grid-cols-12 gap-3 items-center bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs" data-row="{{ $index }}">
-                        <div class="sm:col-span-5">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Stock Item Product</label>
-                            <select name="items[{{ $index }}][stock_id]" class="stock-select w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:bg-white focus:border-indigo-500" onchange="updateProductDetails(this, {{ $index }})">
-                                <option value="">-- Select Product Stock --</option>
-                                @foreach($stocks as $stock)
-                                    <option value="{{ $stock->id }}" data-name="{{ $stock->product_name }}" data-price="{{ $stock->unit_price }}" {{ $item->stock_id == $stock->id ? 'selected' : '' }}>
-                                        {{ $stock->product_name }} (Stock: {{ $stock->quantity }}) - ${{ number_format($stock->unit_price, 2) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="sm:col-span-3">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Product Description / Name *</label>
-                            <input type="text" name="items[{{ $index }}][product_name]" value="{{ $item->product_name }}" required class="product-name-input w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:bg-white focus:border-indigo-500" />
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Qty *</label>
-                            <input type="number" name="items[{{ $index }}][quantity]" value="{{ $item->quantity }}" min="1" required class="qty-input w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:bg-white focus:border-indigo-500" oninput="calculateTotals()" />
-                        </div>
-                        <div class="sm:col-span-2 flex items-center gap-2">
-                            <div class="grow">
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Unit Price ($) *</label>
-                                <input type="number" step="0.01" name="items[{{ $index }}][unit_price]" value="{{ $item->unit_price }}" min="0" required class="price-input w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:bg-white focus:border-indigo-500" oninput="calculateTotals()" />
+            <!-- Items Table Header & List Container -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 overflow-x-auto">
+                <!-- Stock Warning Banner -->
+                <div id="stockAlertBanner" class="hidden bg-rose-50 border-l-4 border-rose-500 p-3 rounded-r-xl text-xs text-rose-800 font-semibold flex items-center gap-2">
+                    <i class="fas fa-triangle-exclamation text-rose-500 text-sm"></i>
+                    <span id="stockAlertBannerText"></span>
+                </div>
+
+                <!-- Table Column Headers -->
+                <div class="flex flex-row items-center gap-3 px-3 py-2 bg-slate-200/70 rounded-lg text-[11px] font-bold text-slate-700 uppercase tracking-wider min-w-[700px]">
+                    <div class="flex-1">Stock Item Product</div>
+                    <div class="w-48 shrink-0">Product Description / Name</div>
+                    <div class="w-24 text-center shrink-0">Qty</div>
+                    <div class="w-28 text-right shrink-0">Unit Price ($)</div>
+                    <div class="w-12 text-center shrink-0">Action</div>
+                </div>
+
+                <div class="space-y-2 min-w-[700px]" id="itemsContainer">
+                    @foreach($order->items as $index => $item)
+                        <div class="item-row flex flex-row items-center gap-3 bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs hover:border-indigo-200 transition-colors" data-row="{{ $index }}">
+                            <div class="flex-1">
+                                <select name="items[{{ $index }}][stock_id]" class="stock-select w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:bg-white focus:border-indigo-500" onchange="updateProductDetails(this, {{ $index }})">
+                                    <option value="">-- Select Product Stock --</option>
+                                    @foreach($stocks as $stock)
+                                        @php
+                                            $price = $stock->retail_price > 0 ? $stock->retail_price : $stock->unit_cost;
+                                        @endphp
+                                        <option value="{{ $stock->id }}" data-name="{{ $stock->product_name }}" data-price="{{ $price }}" data-stock="{{ $stock->quantity }}" {{ $item->stock_id == $stock->id ? 'selected' : '' }}>
+                                            {{ $stock->product_name }} (Stock: {{ $stock->quantity }}) - ${{ number_format($price, 2) }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <button type="button" onclick="removeItemRow(this)" class="mt-4 p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Remove Item">
-                                <i class="fas fa-trash text-xs"></i>
-                            </button>
+                            <div class="w-48 shrink-0">
+                                <input type="text" name="items[{{ $index }}][product_name]" value="{{ $item->product_name }}" required placeholder="Product Description / Name" class="product-name-input w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:bg-white focus:border-indigo-500" />
+                            </div>
+                            <div class="w-24 shrink-0">
+                                <input type="number" name="items[{{ $index }}][quantity]" id="item_qty_{{ $index }}" value="{{ $item->quantity }}" min="1" required class="qty-input w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-center font-bold text-slate-900 focus:bg-white focus:border-indigo-500" oninput="calculateTotals()" />
+                                <span class="stock-warning block text-[10px] font-bold text-rose-600 mt-1 hidden text-center" id="stock_warn_{{ $index }}"></span>
+                            </div>
+                            <div class="w-28 shrink-0">
+                                <input type="number" step="0.01" name="items[{{ $index }}][unit_price]" value="{{ $item->unit_price }}" min="0" required class="price-input w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-right font-bold text-slate-900 focus:bg-white focus:border-indigo-500" oninput="calculateTotals()" />
+                            </div>
+                            <div class="w-12 shrink-0 text-center">
+                                <button type="button" onclick="removeItemRow(this)" class="w-8 h-8 inline-flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all" title="Remove Item">
+                                    <i class="fas fa-trash-can text-sm"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
             </div>
         </div>
 
@@ -185,36 +210,36 @@ let rowCounter = {{ count($order->items) }};
 function addItemRow() {
     const container = document.getElementById('itemsContainer');
     const newRow = document.createElement('div');
-    newRow.className = 'item-row grid grid-cols-1 sm:grid-cols-12 gap-3 items-center bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs';
+    newRow.className = 'item-row flex flex-row items-center gap-3 bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs hover:border-indigo-200 transition-colors';
     newRow.setAttribute('data-row', rowCounter);
     
     newRow.innerHTML = `
-        <div class="sm:col-span-5">
-            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Stock Item Product</label>
-            <select name="items[\${rowCounter}][stock_id]" class="stock-select w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:bg-white focus:border-indigo-500" onchange="updateProductDetails(this, \${rowCounter})">
+        <div class="flex-1">
+            <select name="items[${rowCounter}][stock_id]" class="stock-select w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:bg-white focus:border-indigo-500" onchange="updateProductDetails(this, ${rowCounter})">
                 <option value="">-- Select Product Stock --</option>
                 @foreach($stocks as $stock)
-                    <option value="{{ $stock->id }}" data-name="{{ $stock->product_name }}" data-price="{{ $stock->unit_price }}">
-                        {{ $stock->product_name }} (Stock: {{ $stock->quantity }}) - \${{ number_format($stock->unit_price, 2) }}
+                    @php
+                        $price = $stock->retail_price > 0 ? $stock->retail_price : $stock->unit_cost;
+                    @endphp
+                    <option value="{{ $stock->id }}" data-name="{{ $stock->product_name }}" data-price="{{ $price }}" data-stock="{{ $stock->quantity }}">
+                        {{ $stock->product_name }} (Stock: {{ $stock->quantity }}) - \${{ number_format($price, 2) }}
                     </option>
                 @endforeach
             </select>
         </div>
-        <div class="sm:col-span-3">
-            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Product Description / Name *</label>
-            <input type="text" name="items[\${rowCounter}][product_name]" placeholder="e.g. Dell XPS 15 Laptop" required class="product-name-input w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:bg-white focus:border-indigo-500" />
+        <div class="w-48 shrink-0">
+            <input type="text" name="items[${rowCounter}][product_name]" placeholder="e.g. Dell XPS 15 Laptop" required class="product-name-input w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:bg-white focus:border-indigo-500" />
         </div>
-        <div class="sm:col-span-2">
-            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Qty *</label>
-            <input type="number" name="items[\${rowCounter}][quantity]" value="1" min="1" required class="qty-input w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:bg-white focus:border-indigo-500" oninput="calculateTotals()" />
+        <div class="w-24 shrink-0">
+            <input type="number" name="items[${rowCounter}][quantity]" id="item_qty_${rowCounter}" value="1" min="1" required class="qty-input w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-center font-bold text-slate-900 focus:bg-white focus:border-indigo-500" oninput="calculateTotals()" />
+            <span class="stock-warning block text-[10px] font-bold text-rose-600 mt-1 hidden text-center" id="stock_warn_${rowCounter}"></span>
         </div>
-        <div class="sm:col-span-2 flex items-center gap-2">
-            <div class="grow">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Unit Price ($) *</label>
-                <input type="number" step="0.01" name="items[\${rowCounter}][unit_price]" value="0.00" min="0" required class="price-input w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:bg-white focus:border-indigo-500" oninput="calculateTotals()" />
-            </div>
-            <button type="button" onclick="removeItemRow(this)" class="mt-4 p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Remove Item">
-                <i class="fas fa-trash text-xs"></i>
+        <div class="w-28 shrink-0">
+            <input type="number" step="0.01" name="items[${rowCounter}][unit_price]" value="0.00" min="0" required class="price-input w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-right font-bold text-slate-900 focus:bg-white focus:border-indigo-500" oninput="calculateTotals()" />
+        </div>
+        <div class="w-12 shrink-0 text-center">
+            <button type="button" onclick="removeItemRow(this)" class="w-8 h-8 inline-flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all" title="Remove Item">
+                <i class="fas fa-trash-can text-sm"></i>
             </button>
         </div>
     `;
@@ -248,16 +273,55 @@ function updateProductDetails(select, rowIndex) {
 
 function calculateTotals() {
     let subtotal = 0;
+    let stockOverrunAlerts = [];
     const rows = document.querySelectorAll('.item-row');
 
-    rows.forEach(row => {
-        const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
-        const price = parseFloat(row.querySelector('.price-input').value) || 0;
+    rows.forEach((row, idx) => {
+        const qtyElem = row.querySelector('.qty-input');
+        const priceElem = row.querySelector('.price-input');
+        const selectElem = row.querySelector('.stock-select');
+        const warnElem = row.querySelector('.stock-warning');
+
+        const qty = parseFloat(qtyElem ? qtyElem.value : 0) || 0;
+        const price = parseFloat(priceElem ? priceElem.value : 0) || 0;
         subtotal += (qty * price);
+
+        const selectedOption = selectElem && selectElem.selectedIndex >= 0 ? selectElem.options[selectElem.selectedIndex] : null;
+        if (selectedOption && selectedOption.value && selectedOption.getAttribute('data-stock') !== null) {
+            const availableStock = parseInt(selectedOption.getAttribute('data-stock'), 10);
+            const prodName = selectedOption.getAttribute('data-name') || 'Selected Product';
+
+            if (qty > availableStock) {
+                qtyElem.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-700', 'ring-2', 'ring-rose-200');
+                qtyElem.classList.remove('bg-slate-50', 'border-slate-200', 'text-slate-900');
+                if (warnElem) {
+                    warnElem.textContent = `⚠️ Max: ${availableStock}`;
+                    warnElem.classList.remove('hidden');
+                }
+                stockOverrunAlerts.push(`"${prodName}" quantity (${qty}) exceeds available stock (${availableStock})`);
+            } else {
+                qtyElem.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-700', 'ring-2', 'ring-rose-200');
+                qtyElem.classList.add('bg-slate-50', 'border-slate-200', 'text-slate-900');
+                if (warnElem) {
+                    warnElem.classList.add('hidden');
+                }
+            }
+        }
     });
 
+    const bannerElem = document.getElementById('stockAlertBanner');
+    const bannerTextElem = document.getElementById('stockAlertBannerText');
+    if (bannerElem && bannerTextElem) {
+        if (stockOverrunAlerts.length > 0) {
+            bannerTextElem.textContent = '⚠️ STOCK WARNING: ' + stockOverrunAlerts.join(' | ');
+            bannerElem.classList.remove('hidden');
+        } else {
+            bannerElem.classList.add('hidden');
+        }
+    }
+
     const customerSelect = document.getElementById('customerSelect');
-    const selectedCustomer = customerSelect.options[customerSelect.selectedIndex];
+    const selectedCustomer = customerSelect ? customerSelect.options[customerSelect.selectedIndex] : null;
     const discountPercent = selectedCustomer ? (parseFloat(selectedCustomer.getAttribute('data-discount')) || 0) : 0;
 
     const discountAmount = (subtotal * discountPercent) / 100;
@@ -269,5 +333,38 @@ function calculateTotals() {
     document.getElementById('taxDisplay').innerText = '$' + taxAmount.toFixed(2);
     document.getElementById('grandTotalDisplay').innerText = '$' + grandTotal.toFixed(2);
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const orderForm = document.getElementById('orderForm');
+    if (orderForm) {
+        orderForm.addEventListener('submit', function(e) {
+            let stockAlerts = [];
+            const rows = document.querySelectorAll('.item-row');
+            rows.forEach((row) => {
+                const select = row.querySelector('.stock-select');
+                const qtyElem = row.querySelector('.qty-input');
+                const selectedOption = select && select.selectedIndex >= 0 ? select.options[select.selectedIndex] : null;
+
+                if (selectedOption && selectedOption.value && selectedOption.getAttribute('data-stock') !== null) {
+                    const availableStock = parseInt(selectedOption.getAttribute('data-stock'), 10);
+                    const currentQty = parseInt(qtyElem.value || '0', 10);
+                    const prodName = selectedOption.getAttribute('data-name') || 'Selected Product';
+
+                    if (currentQty > availableStock) {
+                        stockAlerts.push(`• ${prodName}: Quantity entered is ${currentQty}, but only ${availableStock} units are available in stock.`);
+                    }
+                }
+            });
+
+            if (stockAlerts.length > 0) {
+                e.preventDefault();
+                alert("⚠️ INSUFFICIENT STOCK ALERT!\n\nCannot process wholesale order due to inventory stock limits:\n\n" + stockAlerts.join("\n") + "\n\nPlease lower the requested quantity to match available stock.");
+                return false;
+            }
+        });
+    }
+
+    calculateTotals();
+});
 </script>
 @endsection

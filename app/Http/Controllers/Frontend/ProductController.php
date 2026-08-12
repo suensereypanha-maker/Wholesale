@@ -19,37 +19,67 @@ class ProductController extends Controller
         $query = $allProducts;
 
         if ($request->filled('search')) {
-            $search = strtolower($request->search);
+            $search = strtolower(trim($request->search));
             $query = $query->filter(function ($p) use ($search) {
-                return str_contains(strtolower($p['name']), $search) ||
-                       str_contains(strtolower($p['sku']), $search) ||
-                       str_contains(strtolower($p['brand']), $search) ||
-                       str_contains(strtolower($p['category']), $search);
+                $name = strtolower($p['name'] ?? '');
+                $sku = strtolower($p['sku'] ?? '');
+                $brand = strtolower($p['brand'] ?? '');
+                $category = strtolower($p['category'] ?? '');
+                $desc = strtolower($p['description'] ?? '');
+                $specs = strtolower(json_encode($p['specifications'] ?? []));
+
+                return str_contains($name, $search) ||
+                       str_contains($sku, $search) ||
+                       str_contains($brand, $search) ||
+                       str_contains($category, $search) ||
+                       str_contains($desc, $search) ||
+                       str_contains($specs, $search);
             });
         }
 
         if ($request->filled('category')) {
-            $query = $query->where('category_slug', strtolower($request->category));
+            $category = strtolower(trim($request->category));
+            $query = $query->filter(function ($p) use ($category) {
+                $catSlug = strtolower($p['category_slug'] ?? '');
+                $catName = strtolower($p['category'] ?? '');
+                return $catSlug === $category ||
+                       str_contains($catSlug, $category) ||
+                       str_contains($category, $catSlug) ||
+                       $catName === $category ||
+                       str_contains($catName, $category);
+            });
         }
 
         if ($request->filled('brand')) {
-            $query = $query->where('brand_slug', strtolower($request->brand));
+            $brand = strtolower(trim($request->brand));
+            $query = $query->filter(function ($p) use ($brand) {
+                $brandSlug = strtolower($p['brand_slug'] ?? '');
+                $brandName = strtolower($p['brand'] ?? '');
+                return $brandSlug === $brand ||
+                       str_contains($brandSlug, $brand) ||
+                       str_contains($brand, $brandSlug) ||
+                       $brandName === $brand ||
+                       str_contains($brandName, $brand);
+            });
         }
 
         if ($request->filled('min_price')) {
-            $query = $query->where('price', '>=', (float)$request->min_price);
+            $minPrice = (float) $request->min_price;
+            $query = $query->filter(fn($p) => (float)($p['price'] ?? 0) >= $minPrice);
         }
 
         if ($request->filled('max_price')) {
-            $query = $query->where('price', '<=', (float)$request->max_price);
+            $maxPrice = (float) $request->max_price;
+            $query = $query->filter(fn($p) => (float)($p['price'] ?? 0) <= $maxPrice);
         }
 
         if ($request->filled('max_moq')) {
-            $query = $query->where('moq', '<=', (int)$request->max_moq);
+            $maxMoq = (int) $request->max_moq;
+            $query = $query->filter(fn($p) => (int)($p['moq'] ?? 1) <= $maxMoq);
         }
 
         if ($request->boolean('in_stock')) {
-            $query = $query->where('stock', '>', 0);
+            $query = $query->filter(fn($p) => (int)($p['stock'] ?? 0) > 0);
         }
 
         // Sorting
@@ -68,7 +98,7 @@ class ProductController extends Controller
 
         // Custom Pagination
         $perPage = 12;
-        $page = $request->get('page', 1);
+        $page = (int) $request->get('page', 1);
         $total = $query->count();
         $items = $query->slice(($page - 1) * $perPage, $perPage)->values();
 
@@ -94,10 +124,19 @@ class ProductController extends Controller
         $allProducts = collect(FrontendData::products());
 
         $results = $allProducts->filter(function ($p) use ($search) {
-            return str_contains(strtolower($p['name']), $search) ||
-                   str_contains(strtolower($p['sku']), $search) ||
-                   str_contains(strtolower($p['brand']), $search) ||
-                   str_contains(strtolower($p['category']), $search);
+            $name = strtolower($p['name'] ?? '');
+            $sku = strtolower($p['sku'] ?? '');
+            $brand = strtolower($p['brand'] ?? '');
+            $category = strtolower($p['category'] ?? '');
+            $desc = strtolower($p['description'] ?? '');
+            $specs = strtolower(json_encode($p['specifications'] ?? []));
+
+            return str_contains($name, $search) ||
+                   str_contains($sku, $search) ||
+                   str_contains($brand, $search) ||
+                   str_contains($category, $search) ||
+                   str_contains($desc, $search) ||
+                   str_contains($specs, $search);
         })->take(6)->values()->map(function ($p) {
             return [
                 'id' => $p['id'],

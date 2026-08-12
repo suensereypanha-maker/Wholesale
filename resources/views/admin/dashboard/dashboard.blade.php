@@ -97,17 +97,22 @@
                         <i class="fas fa-chevron-right text-xs text-slate-300 group-hover:text-indigo-600 transition-colors"></i>
                     </a>
 
-                    <a href="#" class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200/70 hover:border-emerald-500/50 hover:bg-emerald-50/30 transition-all group">
+                    <a href="{{ route('admin.customers.register', ['status' => 'pending']) }}" class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200/70 hover:border-emerald-500/50 hover:bg-emerald-50/30 transition-all group">
                         <div class="flex items-center gap-3">
                             <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold group-hover:scale-105 transition-transform">
                                 <i class="fas fa-user-plus"></i>
                             </div>
                             <div class="flex flex-col">
                                 <span class="text-xs font-bold text-slate-800">Approve New Buyer</span>
-                                <span class="text-[11px] text-slate-500">Review 18 pending requests</span>
+                                <span class="text-[11px] text-slate-500">Review {{ number_format($pendingUserCount ?? 0) }} pending {{ Str::plural('request', $pendingUserCount ?? 0) }}</span>
                             </div>
                         </div>
-                        <i class="fas fa-chevron-right text-xs text-slate-300 group-hover:text-emerald-600 transition-colors"></i>
+                        <div class="flex items-center gap-2">
+                            @if(($pendingUserCount ?? 0) > 0)
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white animate-pulse">{{ $pendingUserCount }}</span>
+                            @endif
+                            <i class="fas fa-chevron-right text-xs text-slate-300 group-hover:text-emerald-600 transition-colors"></i>
+                        </div>
                     </a>
 
                     <a href="#" class="flex items-center justify-between p-3.5 rounded-xl border border-slate-200/70 hover:border-sky-500/50 hover:bg-sky-50/30 transition-all group">

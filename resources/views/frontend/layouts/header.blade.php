@@ -115,7 +115,7 @@
 </header>
 
 <!-- Secondary Category Nav Menu -->
-<nav class="bg-white border-bottom d-none d-lg-block">
+<nav class="bg-white border-bottom d-none d-lg-block b2b-secondary-nav">
     <div class="container">
         <ul class="nav nav-pills align-items-center font-weight-600 fs-7">
             <li class="nav-item">
@@ -129,7 +129,7 @@
                 <a class="nav-link text-dark py-3 dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fas fa-th-large me-1"></i> All Categories
                 </a>
-                <ul class="dropdown-menu shadow border-0 p-2" style="min-width: 260px;">
+                <ul class="dropdown-menu shadow border-0 p-2 b2b-category-dropdown" style="min-width: 260px;">
                     @foreach($categories as $cat)
                         <li>
                             <a class="dropdown-item d-flex align-items-center justify-content-between py-2 rounded" href="{{ route('frontend.products.index', ['category' => $cat['slug']]) }}">

@@ -27,7 +27,12 @@
                     @endif
                 </div>
 
-                <form action="{{ route('frontend.products.index') }}" method="GET">
+                <form action="{{ route('frontend.products.index') }}" method="GET" id="b2bFilterSidebarForm">
+
+                    <!-- Keep sort if set -->
+                    @if(request()->filled('sort'))
+                        <input type="hidden" name="sort" value="{{ request('sort') }}">
+                    @endif
 
                     <!-- Search Filter -->
                     <div class="mb-4">
@@ -38,10 +43,10 @@
                     <!-- Category Filter -->
                     <div class="mb-4">
                         <label class="form-label font-weight-700 fs-7">Category</label>
-                        <select name="category" class="form-select form-select-sm">
+                        <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
                             <option value="">All Categories</option>
                             @foreach($categories as $cat)
-                                <option value="{{ $cat['slug'] }}" {{ request('category') === $cat['slug'] ? 'selected' : '' }}>
+                                <option value="{{ $cat['slug'] }}" {{ (request('category') === $cat['slug'] || strtolower(request('category')) === strtolower($cat['name'])) ? 'selected' : '' }}>
                                     {{ $cat['name'] }} ({{ $cat['count'] }})
                                 </option>
                             @endforeach
@@ -51,11 +56,11 @@
                     <!-- Brand Filter -->
                     <div class="mb-4">
                         <label class="form-label font-weight-700 fs-7">Brand Manufacturer</label>
-                        <select name="brand" class="form-select form-select-sm">
+                        <select name="brand" class="form-select form-select-sm" onchange="this.form.submit()">
                             <option value="">All Brands</option>
                             @foreach($brands as $b)
-                                <option value="{{ $b['slug'] }}" {{ request('brand') === $b['slug'] ? 'selected' : '' }}>
-                                    {{ $b['name'] }}
+                                <option value="{{ $b['slug'] }}" {{ (request('brand') === $b['slug'] || strtolower(request('brand')) === strtolower($b['name'])) ? 'selected' : '' }}>
+                                    {{ $b['name'] }} ({{ $b['count'] }})
                                 </option>
                             @endforeach
                         </select>
@@ -77,7 +82,7 @@
                     <!-- Stock Availability Filter -->
                     <div class="mb-4">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="in_stock" value="1" id="inStockCheck" {{ request('in_stock') ? 'checked' : '' }}>
+                            <input class="form-check-input" type="checkbox" name="in_stock" value="1" id="inStockCheck" {{ request('in_stock') ? 'checked' : '' }} onchange="this.form.submit()">
                             <label class="form-check-input-label font-weight-600 fs-7" for="inStockCheck">
                                 In Stock Only
                             </label>
@@ -85,15 +90,68 @@
                     </div>
 
                     <!-- Submit Filter Button -->
-                    <button type="submit" class="btn b2b-btn-primary btn-sm w-100 font-weight-700 py-2">
+                    <button type="submit" class="btn b2b-btn-primary btn-sm w-100 font-weight-700 py-2 mb-2">
                         <i class="fas fa-search me-1"></i> Apply Filters
                     </button>
+
+                    @if(request()->anyFilled(['search', 'category', 'brand', 'min_price', 'max_price', 'in_stock']))
+                        <a href="{{ route('frontend.products.index') }}" class="btn btn-outline-secondary btn-sm w-100 font-weight-600 py-1">
+                            <i class="fas fa-undo me-1"></i> Clear All Filters
+                        </a>
+                    @endif
                 </form>
             </div>
         </div>
 
         <!-- Product Listing Content Area -->
         <div class="col-lg-9">
+
+            <!-- Active Filter Badges Bar -->
+            @if(request()->anyFilled(['search', 'category', 'brand', 'min_price', 'max_price', 'in_stock']))
+                <div class="bg-light border rounded-3 p-3 mb-4 d-flex flex-wrap align-items-center gap-2">
+                    <span class="fs-7 font-weight-700 text-secondary me-2"><i class="fas fa-sliders-h me-1"></i> Active Filters:</span>
+
+                    @if(request()->filled('search'))
+                        <a href="{{ route('frontend.products.index', request()->except('search', 'page')) }}" class="badge bg-white text-dark border p-2 text-decoration-none font-weight-600 d-inline-flex align-items-center gap-1 shadow-sm">
+                            <span class="text-secondary">Search:</span> "{{ request('search') }}" <i class="fas fa-times-circle text-danger ms-1"></i>
+                        </a>
+                    @endif
+
+                    @if(request()->filled('category'))
+                        <a href="{{ route('frontend.products.index', request()->except('category', 'page')) }}" class="badge bg-white text-dark border p-2 text-decoration-none font-weight-600 d-inline-flex align-items-center gap-1 shadow-sm">
+                            <span class="text-secondary">Category:</span> {{ ucfirst(request('category')) }} <i class="fas fa-times-circle text-danger ms-1"></i>
+                        </a>
+                    @endif
+
+                    @if(request()->filled('brand'))
+                        <a href="{{ route('frontend.products.index', request()->except('brand', 'page')) }}" class="badge bg-white text-dark border p-2 text-decoration-none font-weight-600 d-inline-flex align-items-center gap-1 shadow-sm">
+                            <span class="text-secondary">Brand:</span> {{ strtoupper(request('brand')) }} <i class="fas fa-times-circle text-danger ms-1"></i>
+                        </a>
+                    @endif
+
+                    @if(request()->filled('min_price'))
+                        <a href="{{ route('frontend.products.index', request()->except('min_price', 'page')) }}" class="badge bg-white text-dark border p-2 text-decoration-none font-weight-600 d-inline-flex align-items-center gap-1 shadow-sm">
+                            <span class="text-secondary">Min Price:</span> ${{ request('min_price') }} <i class="fas fa-times-circle text-danger ms-1"></i>
+                        </a>
+                    @endif
+
+                    @if(request()->filled('max_price'))
+                        <a href="{{ route('frontend.products.index', request()->except('max_price', 'page')) }}" class="badge bg-white text-dark border p-2 text-decoration-none font-weight-600 d-inline-flex align-items-center gap-1 shadow-sm">
+                            <span class="text-secondary">Max Price:</span> ${{ request('max_price') }} <i class="fas fa-times-circle text-danger ms-1"></i>
+                        </a>
+                    @endif
+
+                    @if(request('in_stock'))
+                        <a href="{{ route('frontend.products.index', request()->except('in_stock', 'page')) }}" class="badge bg-white text-dark border p-2 text-decoration-none font-weight-600 d-inline-flex align-items-center gap-1 shadow-sm">
+                            <span class="text-secondary">Availability:</span> In Stock Only <i class="fas fa-times-circle text-danger ms-1"></i>
+                        </a>
+                    @endif
+
+                    <a href="{{ route('frontend.products.index') }}" class="btn btn-sm btn-link text-danger font-weight-700 text-decoration-none ms-auto p-0">
+                        Reset All
+                    </a>
+                </div>
+            @endif
 
             <!-- Header Toolbar: Count & Sorting -->
             <div class="bg-white border rounded-3 p-3 mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
@@ -132,13 +190,41 @@
                     <x-frontend.pagination :paginator="$products" />
                 </div>
             @else
-                <div class="bg-white border rounded-4 p-5 text-center my-4">
-                    <i class="fas fa-search-minus text-secondary fs-1 mb-3"></i>
-                    <h4 class="font-weight-800">No Products Match Your Filter</h4>
-                    <p class="text-secondary">Try adjusting your category, price range, or search keywords.</p>
-                    <a href="{{ route('frontend.products.index') }}" class="btn b2b-btn-accent font-weight-700">
-                        View All Products
-                    </a>
+                <div class="bg-white border rounded-4 p-5 text-center my-4 shadow-sm">
+                    <div class="mb-3 text-secondary">
+                        <i class="fas fa-search-minus fa-3x" style="color: #cbd5e1;"></i>
+                    </div>
+                    <h4 class="font-weight-800 text-dark mb-2">No Products Match Your Filter</h4>
+                    <p class="text-muted max-w-md mx-auto mb-4">
+                        We couldn't find any products matching your combined criteria. Try removing or adjusting specific filters.
+                    </p>
+
+                    <!-- Active filter removal buttons in empty state -->
+                    @if(request()->anyFilled(['search', 'category', 'brand', 'min_price', 'max_price', 'in_stock']))
+                        <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+                            @if(request()->filled('brand'))
+                                <a href="{{ route('frontend.products.index', request()->except('brand', 'page')) }}" class="btn btn-outline-primary btn-sm font-weight-600">
+                                    <i class="fas fa-times me-1"></i> Remove Brand Filter ({{ strtoupper(request('brand')) }})
+                                </a>
+                            @endif
+                            @if(request()->filled('search'))
+                                <a href="{{ route('frontend.products.index', request()->except('search', 'page')) }}" class="btn btn-outline-primary btn-sm font-weight-600">
+                                    <i class="fas fa-times me-1"></i> Remove Search Keyword ("{{ request('search') }}")
+                                </a>
+                            @endif
+                            @if(request()->filled('category'))
+                                <a href="{{ route('frontend.products.index', request()->except('category', 'page')) }}" class="btn btn-outline-primary btn-sm font-weight-600">
+                                    <i class="fas fa-times me-1"></i> Remove Category Filter ({{ ucfirst(request('category')) }})
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="{{ route('frontend.products.index') }}" class="btn b2b-btn-accent font-weight-700 px-4 py-2">
+                            <i class="fas fa-th-large me-1"></i> View All Products
+                        </a>
+                    </div>
                 </div>
             @endif
 

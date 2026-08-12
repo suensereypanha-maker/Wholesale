@@ -18,6 +18,8 @@ use App\Http\Controllers\Admin\CompaniesController;
 use App\Http\Controllers\Admin\CompanyDetailsController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\QuoteController;
+use App\Http\Controllers\Admin\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +50,19 @@ Route::middleware('auth')->group(function () {
     Route::get('orders/registered', [OrderController::class, 'registeredOrders'])->name('orders.registered');
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
     Route::resource('orders', OrderController::class);
+
+    // Quotes & Inquiries Routes
+    Route::patch('quotes/{quote}/status', [QuoteController::class, 'updateStatus'])->name('quotes.update-status');
+    Route::post('quotes/{quote}/convert-to-order', [QuoteController::class, 'convertToOrder'])->name('quotes.convert-to-order');
+    Route::resource('quotes', QuoteController::class);
+
+    // B2B Reports & Analytics Routes
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
+    Route::get('reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
+    Route::get('reports/customers', [ReportController::class, 'customers'])->name('reports.customers');
+    Route::get('reports/quotes', [ReportController::class, 'quotes'])->name('reports.quotes');
+
     Route::post('users/{user}/approve', [UserController::class, 'approve'])->name('users.approve');
     Route::post('users/{user}/reject', [UserController::class, 'reject'])->name('users.reject');
     Route::get('customers-register', [UserController::class, 'customersRegister'])->name('customers.register');
