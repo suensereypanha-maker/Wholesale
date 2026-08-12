@@ -61,19 +61,19 @@
         </div>
     </section>
 
-    <!-- 3. Featured Products -->
+    <!-- 3. All Products Catalog -->
     <section class="mb-5">
         <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
-                <span class="text-uppercase text-cyan font-weight-800 fs-7 tracking-wider">Featured Inventory</span>
-                <h2 class="h3 font-weight-800 mb-0">Enterprise Featured Systems</h2>
+                <span class="text-uppercase text-cyan font-weight-800 fs-7 tracking-wider">Product Catalog</span>
+                <h2 class="h3 font-weight-800 mb-0">All Product Catalog</h2>
             </div>
             <a href="{{ route('frontend.products.index') }}" class="btn btn-link text-primary font-weight-700 text-decoration-none">
                 See Full Inventory <i class="fas fa-arrow-right ms-1"></i>
             </a>
         </div>
         <div class="row g-4">
-            @foreach($featuredProducts as $product)
+            @foreach($allProducts as $product)
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                     <x-frontend.product-card :product="$product" />
                 </div>

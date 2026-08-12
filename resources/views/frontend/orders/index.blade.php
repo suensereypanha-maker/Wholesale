@@ -41,32 +41,41 @@
                     <tbody>
                         @foreach($orders as $order)
                             @php
-                                $statusBg = match($order['status']) {
-                                    'Delivered', 'Completed' => 'bg-success',
-                                    'Shipped' => 'bg-info',
-                                    'Processing', 'Packed' => 'bg-warning text-dark',
-                                    'Confirmed', 'Pending' => 'bg-primary',
-                                    'Cancelled' => 'bg-danger',
+                                $isObject = is_object($order);
+                                $orderId = $isObject ? $order->id : ($order['id'] ?? '');
+                                $orderNum = $isObject ? $order->order_number : ($order['id'] ?? '');
+                                $orderDate = $isObject ? ($order->order_date ? $order->order_date->format('Y-m-d') : $order->created_at->format('Y-m-d')) : ($order['date'] ?? '');
+                                $itemsCount = $isObject ? $order->items->count() : count($order['items'] ?? []);
+                                $totalAmount = $isObject ? $order->total_amount : ($order['total'] ?? 0);
+                                $paymentMethod = $isObject ? ($order->payment_terms ?? 'Standard') : ($order['payment_method'] ?? 'Bank Transfer');
+                                $status = $isObject ? ucfirst($order->status) : ($order['status'] ?? 'Pending');
+
+                                $statusBg = match(strtolower($status)) {
+                                    'delivered', 'completed' => 'bg-success',
+                                    'shipped' => 'bg-info',
+                                    'processing', 'packed' => 'bg-warning text-dark',
+                                    'confirmed', 'pending' => 'bg-primary',
+                                    'cancelled' => 'bg-danger',
                                     default => 'bg-secondary'
                                 };
                             @endphp
                             <tr>
                                 <td class="font-monospace font-weight-800 text-emerald">
-                                    <a href="{{ route('frontend.orders.show', $order['id']) }}" class="text-emerald text-decoration-none">
-                                        {{ $order['id'] }}
+                                    <a href="{{ route('frontend.orders.show', $orderId) }}" class="text-emerald text-decoration-none">
+                                        {{ $orderNum }}
                                     </a>
                                 </td>
-                                <td class="font-weight-600 text-secondary fs-7">{{ $order['date'] }}</td>
-                                <td class="font-weight-600 fs-7">{{ count($order['items']) }} line items</td>
-                                <td class="font-weight-800 text-dark fs-6">${{ number_format($order['total'], 2) }}</td>
-                                <td class="fs-7 text-secondary">{{ $order['payment_method'] ?? 'Bank Transfer' }}</td>
+                                <td class="font-weight-600 text-secondary fs-7">{{ $orderDate }}</td>
+                                <td class="font-weight-600 fs-7">{{ $itemsCount }} line items</td>
+                                <td class="font-weight-800 text-dark fs-6">${{ number_format($totalAmount, 2) }}</td>
+                                <td class="fs-7 text-secondary">{{ $paymentMethod }}</td>
                                 <td>
                                     <span class="badge {{ $statusBg }} px-3 py-2 font-weight-700 rounded-pill">
-                                        {{ $order['status'] }}
+                                        {{ $status }}
                                     </span>
                                 </td>
                                 <td class="text-end">
-                                    <a href="{{ route('frontend.orders.show', $order['id']) }}" class="btn btn-outline-dark btn-sm font-weight-600">
+                                    <a href="{{ route('frontend.orders.show', $orderId) }}" class="btn btn-outline-dark btn-sm font-weight-600">
                                         <i class="fas fa-eye me-1"></i> Track Order
                                     </a>
                                 </td>

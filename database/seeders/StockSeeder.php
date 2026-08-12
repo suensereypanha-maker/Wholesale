@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Warehouse;
+use App\Data\FrontendData;
 use App\Models\Stock;
+use App\Models\Warehouse;
 use Illuminate\Database\Seeder;
 
 class StockSeeder extends Seeder
@@ -13,16 +14,70 @@ class StockSeeder extends Seeder
      */
     public function run(): void
     {
-        $phnWarehouse = Warehouse::where('code', 'WH-PHN-001')->first();
-        $repWarehouse = Warehouse::where('code', 'WH-REP-002')->first();
-        $kasWarehouse = Warehouse::where('code', 'WH-KAS-003')->first();
+        $phnWarehouse = Warehouse::where('code', 'WH-PHN-001')->first() ?? Warehouse::first();
+        $repWarehouse = Warehouse::where('code', 'WH-REP-002')->first() ?? $phnWarehouse;
+        $kasWarehouse = Warehouse::where('code', 'WH-KAS-003')->first() ?? $phnWarehouse;
 
-        if (!$phnWarehouse || !$repWarehouse || !$kasWarehouse) {
+        if (!$phnWarehouse) {
             return;
         }
 
-        $stocks = [
-            // Phnom Penh Hub
+        $warehouses = [$phnWarehouse, $repWarehouse, $kasWarehouse];
+
+        // 1. Seed products from FrontendData::products()
+        $products = FrontendData::products();
+        foreach ($products as $index => $product) {
+            $warehouse = $warehouses[$index % count($warehouses)];
+
+            $tierPrices = array_map(function ($tier) {
+                return [
+                    'min_qty' => $tier['minQty'] ?? 1,
+                    'max_qty' => $tier['maxQty'] ?? null,
+                    'price' => (float) $tier['price'],
+                ];
+            }, $product['wholesalePrices'] ?? []);
+
+            $qty = (int) ($product['stock'] ?? 100);
+            $reserved = min($qty, rand(2, 15));
+            $unitCost = round($product['price'] * 0.75, 2);
+            $moq = (int) ($product['moq'] ?? 5);
+
+            $status = 'in_stock';
+            if ($qty <= 0) {
+                $status = 'out_of_stock';
+            } elseif ($qty <= $moq * 2) {
+                $status = 'low_stock';
+            }
+
+            Stock::updateOrCreate(
+                [
+                    'sku' => $product['sku'],
+                ],
+                [
+                    'warehouse_id' => $warehouse->id,
+                    'sku' => $product['sku'],
+                    'product_name' => $product['name'],
+                    'image' => $product['image'] ?? null,
+                    'short_description' => $product['description'] ?? null,
+                    'description' => $product['description'] ?? null,
+                    'details' => $product['specifications'] ?? [],
+                    'category' => $product['category'] ?? 'General',
+                    'quantity' => $qty,
+                    'reserved_quantity' => $reserved,
+                    'min_reorder_level' => max(5, $moq * 2),
+                    'max_capacity' => max(500, $qty * 3),
+                    'unit_cost' => $unitCost,
+                    'retail_price' => (float) $product['price'],
+                    'tier_prices' => $tierPrices,
+                    'rack_location' => 'RACK-' . sprintf('%02d', ($index % 20) + 1),
+                    'status' => $status,
+                    'notes' => 'Seeded from catalog: ' . ($product['brand'] ?? 'Hardware') . ' (' . ($product['warranty'] ?? 'Standard') . ')',
+                ]
+            );
+        }
+
+        // 2. Sample extra warehouse stocks
+        $extraStocks = [
             [
                 'warehouse_id' => $phnWarehouse->id,
                 'sku' => 'SKU-ELEC-1001',
@@ -33,6 +88,7 @@ class StockSeeder extends Seeder
                 'min_reorder_level' => 100,
                 'max_capacity' => 1000,
                 'unit_cost' => 380.00,
+                'retail_price' => 520.00,
                 'rack_location' => 'A-01-12',
                 'status' => 'in_stock',
                 'notes' => 'High demand commercial component.',
@@ -47,26 +103,11 @@ class StockSeeder extends Seeder
                 'min_reorder_level' => 150,
                 'max_capacity' => 2000,
                 'unit_cost' => 65.50,
+                'retail_price' => 95.00,
                 'rack_location' => 'B-04-02',
                 'status' => 'low_stock',
                 'notes' => 'Stock falling near safety reorder threshold.',
             ],
-            [
-                'warehouse_id' => $phnWarehouse->id,
-                'sku' => 'SKU-TEXT-3010',
-                'product_name' => 'Heavy Duty Cotton Fabric Rolls (100m)',
-                'category' => 'Textiles & Raw Materials',
-                'quantity' => 0,
-                'reserved_quantity' => 0,
-                'min_reorder_level' => 50,
-                'max_capacity' => 500,
-                'unit_cost' => 120.00,
-                'rack_location' => 'C-02-08',
-                'status' => 'out_of_stock',
-                'notes' => 'Urgent replenishment order placed with supplier.',
-            ],
-
-            // Siem Reap Regional Depot
             [
                 'warehouse_id' => $repWarehouse->id,
                 'sku' => 'SKU-PACK-4050',
@@ -77,46 +118,16 @@ class StockSeeder extends Seeder
                 'min_reorder_level' => 300,
                 'max_capacity' => 1500,
                 'unit_cost' => 18.50,
+                'retail_price' => 28.00,
                 'rack_location' => 'R-01-05',
                 'status' => 'in_stock',
                 'notes' => 'Standard wholesale packaging stock.',
             ],
-            [
-                'warehouse_id' => $repWarehouse->id,
-                'sku' => 'SKU-FMCG-2004',
-                'product_name' => 'Premium Wholesale Organic Coffee Beans (10kg Bag)',
-                'category' => 'Food & Beverage',
-                'quantity' => 320,
-                'reserved_quantity' => 20,
-                'min_reorder_level' => 100,
-                'max_capacity' => 800,
-                'unit_cost' => 65.50,
-                'rack_location' => 'R-03-01',
-                'status' => 'in_stock',
-                'notes' => 'Healthy regional stock.',
-            ],
-
-            // Cold Storage Sihanoukville
-            [
-                'warehouse_id' => $kasWarehouse->id,
-                'sku' => 'SKU-COLD-9001',
-                'product_name' => 'Frozen Seafood Grade A (Master Case 25kg)',
-                'category' => 'Cold & Frozen Goods',
-                'quantity' => 680,
-                'reserved_quantity' => 80,
-                'min_reorder_level' => 200,
-                'max_capacity' => 1000,
-                'unit_cost' => 210.00,
-                'rack_location' => 'FREEZER-02',
-                'status' => 'in_stock',
-                'notes' => 'Requires temperature monitoring at -18C.',
-            ],
         ];
 
-        foreach ($stocks as $item) {
+        foreach ($extraStocks as $item) {
             Stock::updateOrCreate(
                 [
-                    'warehouse_id' => $item['warehouse_id'],
                     'sku' => $item['sku'],
                 ],
                 $item

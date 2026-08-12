@@ -154,6 +154,54 @@ a:hover {
     box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
 }
 
+/* Live Search Suggestions Dropdown */
+.b2b-search-suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.18);
+    z-index: 1080;
+    margin-top: 8px;
+    overflow: hidden;
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+.b2b-search-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    text-decoration: none;
+    transition: background 0.15s ease;
+}
+
+.b2b-search-item:last-child {
+    border-bottom: none;
+}
+
+.b2b-search-item:hover {
+    background-color: #f8fafc;
+    color: var(--b2b-accent);
+}
+
+.b2b-search-img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 2px;
+    background: #ffffff;
+    flex-shrink: 0;
+}
+
 .b2b-nav-badge {
     position: absolute;
     top: -5px;
@@ -169,6 +217,61 @@ a:hover {
     align-items: center;
     justify-content: center;
 }
+
+/* Header Account Dropdown Menu */
+.b2b-account-dropdown {
+    min-width: 250px !important;
+    padding: 8px !important;
+    border-radius: 14px !important;
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15) !important;
+    z-index: 1060 !important;
+    margin-top: 10px !important;
+    overflow: hidden !important;
+}
+
+.b2b-account-dropdown .dropdown-header-custom {
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    border: 1px solid #f1f5f9;
+}
+
+.b2b-account-dropdown .dropdown-item {
+    padding: 9px 14px !important;
+    border-radius: 8px !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    color: #1e293b !important;
+    transition: all 0.15s ease-in-out !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.b2b-account-dropdown .dropdown-item:hover,
+.b2b-account-dropdown .dropdown-item:focus {
+    background-color: #f1f5f9 !important;
+    color: var(--b2b-accent) !important;
+    transform: translateX(2px);
+}
+
+.b2b-account-dropdown .dropdown-item-danger {
+    color: #dc2626 !important;
+}
+
+.b2b-account-dropdown .dropdown-item-danger:hover {
+    background-color: #fef2f2 !important;
+    color: #b91c1c !important;
+}
+
+.b2b-account-dropdown .dropdown-divider {
+    margin: 6px 0 !important;
+    border-top: 1px solid #f1f5f9 !important;
+    opacity: 1 !important;
+}
+
 
 /* ==========================================
    Hero Section

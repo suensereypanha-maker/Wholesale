@@ -24,6 +24,9 @@ Route::get('/', [HomeController::class, 'index'])
     ->name('frontend.home');
 
 // Products Catalog & Details
+Route::get('/products/api/search', [ProductController::class, 'apiSearch'])
+    ->name('frontend.products.api-search');
+
 Route::get('/products', [ProductController::class, 'index'])
     ->name('frontend.products.index');
 

@@ -41,18 +41,21 @@
             </div>
 
             <!-- Global Product Search Bar -->
-            <div class="col-12 col-lg-5 my-2 my-lg-0 order-3 order-lg-2">
-                <form action="{{ route('frontend.products.index') }}" method="GET" class="b2b-search-form">
+            <div class="col-12 col-lg-5 my-2 my-lg-0 order-3 order-lg-2 position-relative">
+                <form action="{{ route('frontend.products.index') }}" method="GET" class="b2b-search-form" id="b2bHeaderSearchForm">
                     <div class="input-group b2b-search-group">
                         <span class="input-group-text b2b-search-icon">
                             <i class="fas fa-search"></i>
                         </span>
-                        <input type="text" name="search" class="form-control b2b-search-input" placeholder="Search product name, SKU (e.g. DELL-L5440), brand..." value="{{ request('search') }}" autocomplete="off">
+                        <input type="text" name="search" id="b2bHeaderSearchInput" class="form-control b2b-search-input" placeholder="Search product name, SKU (e.g. DELL-L5440), brand..." value="{{ request('search') }}" autocomplete="off">
                         <button type="submit" class="btn b2b-search-btn">
                             Search
                         </button>
                     </div>
                 </form>
+
+                <!-- Live Search Auto-complete Suggestions Dropdown -->
+                <div id="b2bSearchSuggestions" class="b2b-search-suggestions-dropdown d-none"></div>
             </div>
 
             <!-- Header Action Icons -->
@@ -73,20 +76,29 @@
                 <!-- Customer Account Button -->
                 @if($customer)
                     <div class="dropdown">
-                        <button class="btn btn-outline-dark dropdown-toggle btn-sm font-weight-600 rounded-pill px-3 py-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-building me-1 text-primary"></i> {{ Str::limit($customer['company'] ?? 'Account', 18) }}
+                        <button class="btn btn-outline-dark dropdown-toggle btn-sm font-weight-600 rounded-pill px-3 py-2 d-inline-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1 text-emerald" style="color: var(--b2b-accent);"></i> {{ Str::limit($customer['company'] ?? $customer['name'] ?? 'Account', 18) }}
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                            <li><h6 class="dropdown-header text-uppercase font-weight-700">{{ $customer['name'] }}</h6></li>
-                            <li><a class="dropdown-item" href="{{ route('frontend.account') }}"><i class="fas fa-tachometer-alt me-2 text-primary"></i> B2B Dashboard</a></li>
-                            <li><a class="dropdown-item" href="{{ route('frontend.orders.index') }}"><i class="fas fa-box-open me-2 text-info"></i> Order History</a></li>
-                            <li><a class="dropdown-item" href="{{ route('frontend.account.profile') }}"><i class="fas fa-id-card me-2 text-success"></i> Company Profile</a></li>
-                            <li><a class="dropdown-item" href="{{ route('frontend.account.wishlist') }}"><i class="fas fa-heart me-2 text-danger"></i> Wishlist</a></li>
+                        <ul class="dropdown-menu dropdown-menu-end b2b-account-dropdown">
+                            <li>
+                                <div class="dropdown-header-custom">
+                                    <div class="fw-bold text-dark fs-7 text-uppercase" style="letter-spacing: 0.5px;">{{ $customer['name'] ?? 'Account' }}</div>
+                                    @if(!empty($customer['email']))
+                                        <div class="text-muted fs-8 text-truncate">{{ $customer['email'] }}</div>
+                                    @endif
+                                </div>
+                            </li>
+                            <li><a class="dropdown-item" href="{{ route('frontend.account') }}"><i class="fas fa-tachometer-alt me-2 text-primary" style="width: 18px; text-align: center;"></i> B2B Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{{ route('frontend.orders.index') }}"><i class="fas fa-box-open me-2 text-info" style="width: 18px; text-align: center;"></i> Order History</a></li>
+                            <li><a class="dropdown-item" href="{{ route('frontend.account.profile') }}"><i class="fas fa-id-card me-2 text-success" style="width: 18px; text-align: center;"></i> Company Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ route('frontend.account.wishlist') }}"><i class="fas fa-heart me-2 text-danger" style="width: 18px; text-align: center;"></i> Wishlist</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <form action="{{ route('frontend.logout') }}" method="POST">
+                                <form action="{{ route('frontend.logout') }}" method="POST" class="m-0 p-0">
                                     @csrf
-                                    <button type="submit" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt me-2"></i> Log Out</button>
+                                    <button type="submit" class="dropdown-item dropdown-item-danger w-100 border-0 bg-transparent text-start">
+                                        <i class="fas fa-sign-out-alt me-2 text-danger" style="width: 18px; text-align: center;"></i> Log Out
+                                    </button>
                                 </form>
                             </li>
                         </ul>

@@ -60,6 +60,13 @@ class AdminMenuSeeder extends Seeder
                         'permission' => 'manage_orders',
                         'order'      => 1,
                     ],
+                    [
+                        'title'      => 'Customer Register Order',
+                        'icon'       => 'fas fa-user-plus',
+                        'route'      => 'admin.orders.registered',
+                        'permission' => 'manage_orders',
+                        'order'      => 2,
+                    ],
                 ],
             ],
             [
@@ -110,7 +117,7 @@ class AdminMenuSeeder extends Seeder
                 'section'    => 'Client Accounts',
                 'title'      => 'B2B Clients',
                 'icon'       => 'fas fa-users-gear',
-                'url'        => '#',
+                'route'      => 'admin.customers.index',
                 'permission' => 'manage_users',
                 'order'      => 10,
             ],
@@ -118,7 +125,7 @@ class AdminMenuSeeder extends Seeder
                 'section'     => 'Client Accounts',
                 'title'       => 'Buyer Approvals',
                 'icon'        => 'fas fa-user-check',
-                'url'         => '#',
+                'route'       => 'admin.customers.register',
                 'permission'  => 'manage_users',
                 'order'       => 11,
             ],
@@ -131,7 +138,7 @@ class AdminMenuSeeder extends Seeder
                 'order'      => 12,
             ],
 
-            // Inventory & Logistics Section (with Children Submenu)
+            // Inventory & Logistics Section
             [
                 'section'     => 'Inventory & Logistics',
                 'title'       => 'Inventory',
@@ -179,15 +186,15 @@ class AdminMenuSeeder extends Seeder
                         'order'      => 1,
                     ],
                     [
-                        'title'      => 'Customers',
-                        'icon'       => 'fas fa-user',
+                        'title'      => 'B2B Customers',
+                        'icon'       => 'fas fa-building-user',
                         'route'      => 'admin.customers.index',
                         'permission' => '',
                         'order'      => 2,
                     ],
                     [
-                        'title'      => 'Customers Register',
-                        'icon'       => 'fas fa-user-plus',
+                        'title'      => 'Customer Registrations',
+                        'icon'       => 'fas fa-user-check',
                         'route'      => 'admin.customers.register',
                         'permission' => '',
                         'order'      => 3,
@@ -195,7 +202,7 @@ class AdminMenuSeeder extends Seeder
                 ],
             ],
 
-            // Settings Section (with Children Submenu)
+            // Settings Section
             [
                 'section'     => 'Settings',
                 'title'       => 'Settings',

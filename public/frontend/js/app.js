@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Initialize Product Sliders
     initProductSliders();
+
+    // Initialize Header Live Auto-complete Search
+    initHeaderLiveSearch();
 });
 
 /**
@@ -142,4 +145,95 @@ function showB2BToast(message, type = 'success') {
     toastNode.addEventListener('hidden.bs.toast', function () {
         toastNode.remove();
     });
+}
+
+/**
+ * Global Header Live Search Suggestions Handler
+ */
+function initHeaderLiveSearch() {
+    const input = document.getElementById('b2bHeaderSearchInput');
+    const container = document.getElementById('b2bSearchSuggestions');
+
+    if (!input || !container) return;
+
+    let debounceTimer;
+
+    input.addEventListener('input', function () {
+        const query = this.value.trim();
+
+        clearTimeout(debounceTimer);
+
+        if (query.length < 2) {
+            container.classList.add('d-none');
+            container.innerHTML = '';
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+            fetch(`/products/api/search?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data || data.length === 0) {
+                        container.innerHTML = `
+                            <div class="p-3 text-center text-muted fs-7">
+                                <i class="fas fa-search-minus me-1"></i> No matching products found for "<strong>${escapeHtml(query)}</strong>"
+                            </div>
+                        `;
+                        container.classList.remove('d-none');
+                        return;
+                    }
+
+                    let html = '';
+                    data.forEach(item => {
+                        html += `
+                            <a href="${item.url}" class="b2b-search-item">
+                                <img src="${item.image}" alt="" class="b2b-search-img">
+                                <div class="flex-grow-1 min-w-0">
+                                    <div class="font-weight-700 text-dark fs-7 text-truncate">${escapeHtml(item.name)}</div>
+                                    <div class="fs-8 text-muted">SKU: <span class="font-monospace">${escapeHtml(item.sku)}</span> | ${escapeHtml(item.brand)}</div>
+                                </div>
+                                <div class="font-weight-800 text-emerald text-nowrap fs-7">${item.price}</div>
+                            </a>
+                        `;
+                    });
+
+                    html += `
+                        <a href="/products?search=${encodeURIComponent(query)}" class="d-block p-2 text-center bg-light text-primary font-weight-700 fs-7 text-decoration-none border-top">
+                            View all search results for "${escapeHtml(query)}" <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    `;
+
+                    container.innerHTML = html;
+                    container.classList.remove('d-none');
+                })
+                .catch(() => {
+                    container.classList.add('d-none');
+                });
+        }, 220);
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!input.contains(e.target) && !container.contains(e.target)) {
+            container.classList.add('d-none');
+        }
+    });
+
+    input.addEventListener('focus', function () {
+        if (container.children.length > 0 && this.value.trim().length >= 2) {
+            container.classList.remove('d-none');
+        }
+    });
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, 
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag)
+    );
 }

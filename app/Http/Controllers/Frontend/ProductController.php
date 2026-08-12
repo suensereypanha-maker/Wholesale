@@ -83,6 +83,36 @@ class ProductController extends Controller
         return view('frontend.products.index', compact('products', 'categories', 'brands'));
     }
 
+    public function apiSearch(Request $request)
+    {
+        $queryStr = trim($request->get('q', ''));
+        if (strlen($queryStr) < 2) {
+            return response()->json([]);
+        }
+
+        $search = strtolower($queryStr);
+        $allProducts = collect(FrontendData::products());
+
+        $results = $allProducts->filter(function ($p) use ($search) {
+            return str_contains(strtolower($p['name']), $search) ||
+                   str_contains(strtolower($p['sku']), $search) ||
+                   str_contains(strtolower($p['brand']), $search) ||
+                   str_contains(strtolower($p['category']), $search);
+        })->take(6)->values()->map(function ($p) {
+            return [
+                'id' => $p['id'],
+                'name' => $p['name'],
+                'sku' => $p['sku'],
+                'brand' => $p['brand'],
+                'price' => '$' . number_format($p['price'], 2),
+                'image' => $p['image'],
+                'url' => route('frontend.products.show', $p['id']),
+            ];
+        });
+
+        return response()->json($results);
+    }
+
     public function show($id)
     {
         $product = FrontendData::getProductById($id);

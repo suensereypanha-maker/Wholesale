@@ -18,8 +18,8 @@ class UserController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = User::whereDoesntHave('roles', function ($q) {
-            $q->where('name', 'User');
+        $query = User::whereHas('roles', function ($q) {
+            $q->whereIn('name', ['Super Admin', 'Admin', 'Manager', 'Staff']);
         })->with('roles')->latest();
 
         if ($request->filled('search')) {
@@ -39,8 +39,8 @@ class UserController extends Controller
 
         $users = $query->paginate(10)->withQueryString();
 
-        $adminQuery = User::whereDoesntHave('roles', function ($q) {
-            $q->where('name', 'User');
+        $adminQuery = User::whereHas('roles', function ($q) {
+            $q->whereIn('name', ['Super Admin', 'Admin', 'Manager', 'Staff']);
         });
 
         $totalUsers = (clone $adminQuery)->count();
@@ -64,8 +64,10 @@ class UserController extends Controller
      */
     public function customersRegister(Request $request): View
     {
-        $query = User::whereHas('roles', function ($q) {
-            $q->where('name', 'User');
+        $query = User::where(function ($q) {
+            $q->whereHas('roles', function ($rq) {
+                $rq->where('name', 'User');
+            })->orWhereDoesntHave('roles');
         })->with('roles')->latest();
 
         if ($request->filled('search')) {
@@ -85,8 +87,10 @@ class UserController extends Controller
 
         $users = $query->paginate(10)->withQueryString();
 
-        $customerQuery = User::whereHas('roles', function ($q) {
-            $q->where('name', 'User');
+        $customerQuery = User::where(function ($q) {
+            $q->whereHas('roles', function ($rq) {
+                $rq->where('name', 'User');
+            })->orWhereDoesntHave('roles');
         });
 
         $totalUsers = (clone $customerQuery)->count();
@@ -257,8 +261,34 @@ class UserController extends Controller
     {
         $user->update(['status' => 'active']);
 
+        // Auto-create/sync B2B Wholesale Customer profile
+        $customer = \App\Models\Customer::where('email', $user->email)->first();
+
+        if (!$customer) {
+            \App\Models\Customer::create([
+                'customer_code' => \App\Models\Customer::generateUniqueCode(),
+                'name' => $user->name,
+                'company_name' => $user->company ?? ($user->name . ' Co.'),
+                'email' => $user->email,
+                'phone' => $user->phone ?? '-',
+                'tier' => $user->tier ?? 'Standard Wholesale',
+                'wholesale_discount' => $user->wholesale_discount ?? 5.00,
+                'credit_limit' => $user->credit_limit ?? 10000.00,
+                'total_spent' => 0.00,
+                'total_orders' => 0,
+                'payment_terms' => 'Net 30',
+                'tax_id' => $user->tax_number ?? null,
+                'address' => $user->address ?? 'Phnom Penh',
+                'city' => $user->city ?? 'Phnom Penh',
+                'country' => $user->country ?? 'Cambodia',
+                'status' => 'active',
+            ]);
+        } else {
+            $customer->update(['status' => 'active']);
+        }
+
         return redirect()->back()
-            ->with('success', "User account '{$user->name}' ({$user->email}) has been approved and activated.");
+            ->with('success', "User account '{$user->name}' ({$user->email}) approved and added to B2B Wholesale Customers.");
     }
 
     /**

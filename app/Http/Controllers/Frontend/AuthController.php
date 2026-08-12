@@ -84,10 +84,11 @@ class AuthController extends Controller
         ]);
 
         // Assign default User role
-        $userRole = Role::where('name', 'User')->first();
-        if ($userRole) {
-            $user->assignRole($userRole->name);
-        }
+        $userRole = Role::firstOrCreate(
+            ['name' => 'User'],
+            ['guard_name' => 'web', 'description' => 'Standard B2B Customer account']
+        );
+        $user->assignRole($userRole->name);
 
         return redirect()->route('frontend.login')->with('success', 'Your B2B commercial account application has been submitted successfully! Your account is currently pending administrator approval.');
     }

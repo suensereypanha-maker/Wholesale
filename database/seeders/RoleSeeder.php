@@ -34,6 +34,11 @@ class RoleSeeder extends Seeder
             ['guard_name' => 'web', 'description' => 'Basic staff access to view orders and dashboard']
         );
 
+        $userRole = Role::updateOrCreate(
+            ['name' => 'User'],
+            ['guard_name' => 'web', 'description' => 'Standard B2B Customer account']
+        );
+
         // Assign Permissions
         $allPermissions = Permission::pluck('name')->toArray();
 

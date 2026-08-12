@@ -75,8 +75,11 @@
                                 $parentBadgeCount = 0;
                                 if ($hasSubmenu) {
                                     foreach ($item->children as $sub) {
-                                        if (!empty($sub->route) && \Illuminate\Support\Facades\Route::has($sub->route) && request()->routeIs($sub->route)) {
-                                            $hasActiveChild = true;
+                                        if (!empty($sub->route) && \Illuminate\Support\Facades\Route::has($sub->route)) {
+                                            $baseRoute = \Illuminate\Support\Str::before($sub->route, '.index');
+                                            if (request()->routeIs($sub->route) || request()->routeIs($baseRoute . '.*')) {
+                                                $hasActiveChild = true;
+                                            }
                                         }
                                         if (!empty($sub->route) && $sub->route === 'admin.customers.register') {
                                             $parentBadgeCount = $pendingCustomersCount;

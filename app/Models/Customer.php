@@ -4,12 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Model
 {
     use HasFactory;
 
     protected $table = 'customers';
+
+    /**
+     * Orders relationship.
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
 
     protected $fillable = [
         'customer_code',
@@ -86,6 +95,21 @@ class Customer extends Model
             'Bulk Silver' => 'bg-slate-100 text-slate-700 border-slate-300',
             default => 'bg-blue-50 text-blue-700 border-blue-200',
         };
+    }
+
+    /**
+     * Generate a unique customer code (e.g. CUST-1009, CUST-1010).
+     */
+    public static function generateUniqueCode(): string
+    {
+        $counter = static::count() + 1001;
+        
+        do {
+            $code = 'CUST-' . str_pad($counter, 4, '0', STR_PAD_LEFT);
+            $counter++;
+        } while (static::where('customer_code', $code)->exists());
+
+        return $code;
     }
 
     /**

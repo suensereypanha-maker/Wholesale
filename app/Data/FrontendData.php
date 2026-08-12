@@ -9,26 +9,34 @@ class FrontendData
      */
     public static function categories()
     {
-        return [
-            ['name' => 'Laptop', 'slug' => 'laptop', 'icon' => 'fas fa-laptop', 'count' => 8, 'description' => 'Business, Enterprise, and Ultrabook Laptops'],
-            ['name' => 'Desktop', 'slug' => 'desktop', 'icon' => 'fas fa-desktop', 'count' => 6, 'description' => 'Commercial Desktop Towers and Small Form Factor PCs'],
-            ['name' => 'Gaming PC', 'slug' => 'gaming-pc', 'icon' => 'fas fa-gamepad', 'count' => 4, 'description' => 'High-Performance Rig & Gaming Desktop Systems'],
-            ['name' => 'Workstation', 'slug' => 'workstation', 'icon' => 'fas fa-server', 'count' => 5, 'description' => 'Heavy-Duty Workstations for CAD, AI, & Render Labs'],
-            ['name' => 'CPU', 'slug' => 'cpu', 'icon' => 'fas fa-microchip', 'count' => 6, 'description' => 'Intel Xeon, Core i7/i9 & AMD Ryzen / EPYC Processors'],
-            ['name' => 'GPU', 'slug' => 'gpu', 'icon' => 'fas fa-vr-cardboard', 'count' => 5, 'description' => 'NVIDIA RTX Enterprise & Consumer Graphics Cards'],
-            ['name' => 'RAM', 'slug' => 'ram', 'icon' => 'fas fa-memory', 'count' => 5, 'description' => 'DDR4 / DDR5 ECC & Non-ECC Server & Desktop Memory'],
-            ['name' => 'SSD', 'slug' => 'ssd', 'icon' => 'fas fa-hdd', 'count' => 6, 'description' => 'NVMe M.2 & Enterprise SATA Solid State Drives'],
-            ['name' => 'HDD', 'slug' => 'hdd', 'icon' => 'fas fa-database', 'count' => 4, 'description' => 'High-Capacity Enterprise NAS & Server Hard Drives'],
-            ['name' => 'Motherboard', 'slug' => 'motherboard', 'icon' => 'fas fa-chess-board', 'count' => 4, 'description' => 'Server, Workstation, and Commercial Mainboards'],
-            ['name' => 'Monitor', 'slug' => 'monitor', 'icon' => 'fas fa-tv', 'count' => 6, 'description' => '4K UltraHD, Curved, and Color-Calibrated Displays'],
-            ['name' => 'Keyboard', 'slug' => 'keyboard', 'icon' => 'fas fa-keyboard', 'count' => 4, 'description' => 'Ergonomic, Mechanical, and Office Keyboards'],
-            ['name' => 'Mouse', 'slug' => 'mouse', 'icon' => 'fas fa-mouse', 'count' => 4, 'description' => 'Precision Optical, Wireless, and Ergonomic Mice'],
-            ['name' => 'Router', 'slug' => 'router', 'icon' => 'fas fa-wifi', 'count' => 5, 'description' => 'Enterprise Wi-Fi 6/6E Routers & Access Points'],
-            ['name' => 'Switch', 'slug' => 'switch', 'icon' => 'fas fa-network-wired', 'count' => 4, 'description' => 'Managed & Unmanaged Gigabit PoE Switches'],
-            ['name' => 'Printer', 'slug' => 'printer', 'icon' => 'fas fa-print', 'count' => 4, 'description' => 'High-Volume Enterprise Multifunction Laser Printers'],
-            ['name' => 'UPS', 'slug' => 'ups', 'icon' => 'fas fa-battery-full', 'count' => 4, 'description' => 'Uninterruptible Power Supply Units & Battery Backup'],
-            ['name' => 'Accessories', 'slug' => 'accessories', 'icon' => 'fas fa-plug', 'count' => 6, 'description' => 'Docking Stations, Cables, Adapters & Mounts'],
+        $products = static::products();
+        $counts = array_count_values(array_column($products, 'category_slug'));
+
+        $items = [
+            ['name' => 'Laptop', 'slug' => 'laptop', 'icon' => 'fas fa-laptop', 'description' => 'Business, Enterprise, and Ultrabook Laptops'],
+            ['name' => 'Desktop', 'slug' => 'desktop', 'icon' => 'fas fa-desktop', 'description' => 'Commercial Desktop Towers and Small Form Factor PCs'],
+            ['name' => 'Gaming PC', 'slug' => 'gaming-pc', 'icon' => 'fas fa-gamepad', 'description' => 'High-Performance Rig & Gaming Desktop Systems'],
+            ['name' => 'Workstation', 'slug' => 'workstation', 'icon' => 'fas fa-server', 'description' => 'Heavy-Duty Workstations for CAD, AI, & Render Labs'],
+            ['name' => 'CPU', 'slug' => 'cpu', 'icon' => 'fas fa-microchip', 'description' => 'Intel Xeon, Core i7/i9 & AMD Ryzen / EPYC Processors'],
+            ['name' => 'GPU', 'slug' => 'gpu', 'icon' => 'fas fa-vr-cardboard', 'description' => 'NVIDIA RTX Enterprise & Consumer Graphics Cards'],
+            ['name' => 'RAM', 'slug' => 'ram', 'icon' => 'fas fa-memory', 'description' => 'DDR4 / DDR5 ECC & Non-ECC Server & Desktop Memory'],
+            ['name' => 'SSD', 'slug' => 'ssd', 'icon' => 'fas fa-hdd', 'description' => 'NVMe M.2 & Enterprise SATA Solid State Drives'],
+            ['name' => 'HDD', 'slug' => 'hdd', 'icon' => 'fas fa-database', 'description' => 'High-Capacity Enterprise NAS & Server Hard Drives'],
+            ['name' => 'Motherboard', 'slug' => 'motherboard', 'icon' => 'fas fa-chess-board', 'description' => 'Server, Workstation, and Commercial Mainboards'],
+            ['name' => 'Monitor', 'slug' => 'monitor', 'icon' => 'fas fa-tv', 'description' => '4K UltraHD, Curved, and Color-Calibrated Displays'],
+            ['name' => 'Keyboard', 'slug' => 'keyboard', 'icon' => 'fas fa-keyboard', 'description' => 'Ergonomic, Mechanical, and Office Keyboards'],
+            ['name' => 'Mouse', 'slug' => 'mouse', 'icon' => 'fas fa-mouse', 'description' => 'Precision Optical, Wireless, and Ergonomic Mice'],
+            ['name' => 'Router', 'slug' => 'router', 'icon' => 'fas fa-wifi', 'description' => 'Enterprise Wi-Fi 6/6E Routers & Access Points'],
+            ['name' => 'Switch', 'slug' => 'switch', 'icon' => 'fas fa-network-wired', 'description' => 'Managed & Unmanaged Gigabit PoE Switches'],
+            ['name' => 'Printer', 'slug' => 'printer', 'icon' => 'fas fa-print', 'description' => 'High-Volume Enterprise Multifunction Laser Printers'],
+            ['name' => 'UPS', 'slug' => 'ups', 'icon' => 'fas fa-battery-full', 'description' => 'Uninterruptible Power Supply Units & Battery Backup'],
+            ['name' => 'Accessories', 'slug' => 'accessories', 'icon' => 'fas fa-plug', 'description' => 'Docking Stations, Cables, Adapters & Mounts'],
         ];
+
+        return array_map(function ($item) use ($counts) {
+            $item['count'] = $counts[$item['slug']] ?? 0;
+            return $item;
+        }, $items);
     }
 
     /**
@@ -36,28 +44,120 @@ class FrontendData
      */
     public static function brands()
     {
-        return [
-            ['name' => 'Dell', 'slug' => 'dell', 'logo' => 'DELL', 'count' => 12, 'icon' => 'fas fa-laptop', 'tagline' => 'Enterprise Laptops & Servers', 'accent' => '#007db8'],
-            ['name' => 'HP', 'slug' => 'hp', 'logo' => 'HP', 'count' => 10, 'icon' => 'fas fa-desktop', 'tagline' => 'EliteBook & ProLiant', 'accent' => '#0096d6'],
-            ['name' => 'Lenovo', 'slug' => 'lenovo', 'logo' => 'LENOVO', 'count' => 9, 'icon' => 'fas fa-laptop-code', 'tagline' => 'ThinkPad & Workstations', 'accent' => '#e2231a'],
-            ['name' => 'ASUS', 'slug' => 'asus', 'logo' => 'ASUS', 'count' => 8, 'icon' => 'fas fa-microchip', 'tagline' => 'ExpertBook & Systems', 'accent' => '#00539b'],
-            ['name' => 'Acer', 'slug' => 'acer', 'logo' => 'ACER', 'count' => 6, 'icon' => 'fas fa-laptop-house', 'tagline' => 'TravelMate Series', 'accent' => '#83b81a'],
-            ['name' => 'MSI', 'slug' => 'msi', 'logo' => 'MSI', 'count' => 5, 'icon' => 'fas fa-gamepad', 'tagline' => 'Pro Desktops & GPUs', 'accent' => '#ff0000'],
-            ['name' => 'Intel', 'slug' => 'intel', 'logo' => 'INTEL', 'count' => 11, 'icon' => 'fas fa-microchip', 'tagline' => 'Xeon & Core CPUs', 'accent' => '#0068b5'],
-            ['name' => 'AMD', 'slug' => 'amd', 'logo' => 'AMD', 'count' => 8, 'icon' => 'fas fa-server', 'tagline' => 'EPYC & Ryzen CPUs', 'accent' => '#ed1c24'],
-            ['name' => 'NVIDIA', 'slug' => 'nvidia', 'logo' => 'NVIDIA', 'count' => 7, 'icon' => 'fas fa-memory', 'tagline' => 'RTX Workstation GPUs', 'accent' => '#76b900'],
-            ['name' => 'Samsung', 'slug' => 'samsung', 'logo' => 'SAMSUNG', 'count' => 9, 'icon' => 'fas fa-hdd', 'tagline' => 'NVMe SSDs & RAM', 'accent' => '#1428a0'],
-            ['name' => 'Logitech', 'slug' => 'logitech', 'logo' => 'LOGITECH', 'count' => 7, 'icon' => 'fas fa-keyboard', 'tagline' => 'Business Peripherals', 'accent' => '#00b8fc'],
-            ['name' => 'TP-Link', 'slug' => 'tp-link', 'logo' => 'TP-LINK', 'count' => 6, 'icon' => 'fas fa-wifi', 'tagline' => 'Omada Networking', 'accent' => '#4ac4cf'],
-            ['name' => 'Canon', 'slug' => 'canon', 'logo' => 'CANON', 'count' => 4, 'icon' => 'fas fa-print', 'tagline' => 'Commercial Printers', 'accent' => '#cc0000'],
-            ['name' => 'Epson', 'slug' => 'epson', 'logo' => 'EPSON', 'count' => 4, 'icon' => 'fas fa-copy', 'tagline' => 'WorkForce Scanners', 'accent' => '#003399'],
+        $products = static::products();
+        $counts = array_count_values(array_column($products, 'brand_slug'));
+
+        $items = [
+            ['name' => 'Dell', 'slug' => 'dell', 'logo' => 'DELL', 'icon' => 'fas fa-laptop', 'tagline' => 'Enterprise Laptops & Servers', 'accent' => '#007db8'],
+            ['name' => 'HP', 'slug' => 'hp', 'logo' => 'HP', 'icon' => 'fas fa-desktop', 'tagline' => 'EliteBook & ProLiant', 'accent' => '#0096d6'],
+            ['name' => 'Lenovo', 'slug' => 'lenovo', 'logo' => 'LENOVO', 'icon' => 'fas fa-laptop-code', 'tagline' => 'ThinkPad & Workstations', 'accent' => '#e2231a'],
+            ['name' => 'ASUS', 'slug' => 'asus', 'logo' => 'ASUS', 'icon' => 'fas fa-microchip', 'tagline' => 'ExpertBook & Systems', 'accent' => '#00539b'],
+            ['name' => 'Acer', 'slug' => 'acer', 'logo' => 'ACER', 'icon' => 'fas fa-laptop-house', 'tagline' => 'TravelMate Series', 'accent' => '#83b81a'],
+            ['name' => 'MSI', 'slug' => 'msi', 'logo' => 'MSI', 'icon' => 'fas fa-gamepad', 'tagline' => 'Pro Desktops & GPUs', 'accent' => '#ff0000'],
+            ['name' => 'Intel', 'slug' => 'intel', 'logo' => 'INTEL', 'icon' => 'fas fa-microchip', 'tagline' => 'Xeon & Core CPUs', 'accent' => '#0068b5'],
+            ['name' => 'AMD', 'slug' => 'amd', 'logo' => 'AMD', 'icon' => 'fas fa-server', 'tagline' => 'EPYC & Ryzen CPUs', 'accent' => '#ed1c24'],
+            ['name' => 'NVIDIA', 'slug' => 'nvidia', 'logo' => 'NVIDIA', 'icon' => 'fas fa-memory', 'tagline' => 'RTX Workstation GPUs', 'accent' => '#76b900'],
+            ['name' => 'Samsung', 'slug' => 'samsung', 'logo' => 'SAMSUNG', 'icon' => 'fas fa-hdd', 'tagline' => 'NVMe SSDs & RAM', 'accent' => '#1428a0'],
+            ['name' => 'Logitech', 'slug' => 'logitech', 'logo' => 'LOGITECH', 'icon' => 'fas fa-keyboard', 'tagline' => 'Business Peripherals', 'accent' => '#00b8fc'],
+            ['name' => 'TP-Link', 'slug' => 'tp-link', 'logo' => 'TP-LINK', 'icon' => 'fas fa-wifi', 'tagline' => 'Omada Networking', 'accent' => '#4ac4cf'],
+            ['name' => 'Canon', 'slug' => 'canon', 'logo' => 'CANON', 'icon' => 'fas fa-print', 'tagline' => 'Commercial Printers', 'accent' => '#cc0000'],
+            ['name' => 'Epson', 'slug' => 'epson', 'logo' => 'EPSON', 'icon' => 'fas fa-copy', 'tagline' => 'WorkForce Scanners', 'accent' => '#003399'],
         ];
+
+        return array_map(function ($item) use ($counts) {
+            $item['count'] = $counts[$item['slug']] ?? 0;
+            return $item;
+        }, $items);
     }
 
     /**
-     * Get all 30+ products.
+     * Extract brand name from product name or details.
+     */
+    protected static function extractBrandName(string $name): string
+    {
+        $knownBrands = ['Dell', 'HP', 'Lenovo', 'ASUS', 'Acer', 'MSI', 'Intel', 'AMD', 'NVIDIA', 'Samsung', 'Logitech', 'TP-Link', 'Canon', 'Epson', 'APC', 'Seagate', 'Kingston'];
+        foreach ($knownBrands as $brand) {
+            if (stripos($name, $brand) !== false) {
+                return $brand;
+            }
+        }
+        $words = explode(' ', trim($name));
+        return $words[0] ?? 'General';
+    }
+
+    /**
+     * Get all products (dynamically fetched from Stock database table with static fallback).
      */
     public static function products()
+    {
+        try {
+            if (class_exists(\App\Models\Stock::class) && \App\Models\Stock::count() > 0) {
+                $stocks = \App\Models\Stock::orderBy('id', 'asc')->get();
+                $dbProducts = [];
+
+                foreach ($stocks as $stock) {
+                    $brandName = $stock->details['brand'] ?? static::extractBrandName($stock->product_name);
+                    
+                    $wholesalePrices = [];
+                    if (!empty($stock->tier_prices) && is_array($stock->tier_prices)) {
+                        foreach ($stock->tier_prices as $tier) {
+                            $wholesalePrices[] = [
+                                'minQty' => (int) ($tier['min_qty'] ?? $tier['minQty'] ?? 1),
+                                'maxQty' => isset($tier['max_qty']) && $tier['max_qty'] !== null && $tier['max_qty'] !== '' ? (int) $tier['max_qty'] : (isset($tier['maxQty']) && $tier['maxQty'] !== null ? (int) $tier['maxQty'] : null),
+                                'price' => (float) ($tier['price'] ?? $stock->retail_price),
+                            ];
+                        }
+                    }
+
+                    if (empty($wholesalePrices) && $stock->retail_price > 0) {
+                        $price = (float) $stock->retail_price;
+                        $wholesalePrices = [
+                            ['minQty' => 1, 'maxQty' => 4, 'price' => $price],
+                            ['minQty' => 5, 'maxQty' => 19, 'price' => round($price * 0.95, 2)],
+                            ['minQty' => 20, 'maxQty' => 49, 'price' => round($price * 0.90, 2)],
+                            ['minQty' => 50, 'maxQty' => null, 'price' => round($price * 0.85, 2)],
+                        ];
+                    }
+
+                    $dbProducts[] = [
+                        'id' => $stock->id,
+                        'sku' => $stock->sku,
+                        'name' => $stock->product_name,
+                        'brand' => $brandName,
+                        'brand_slug' => \Illuminate\Support\Str::slug($brandName),
+                        'category' => $stock->category ?? 'General',
+                        'category_slug' => \Illuminate\Support\Str::slug($stock->category ?? 'General'),
+                        'description' => $stock->short_description ?? $stock->description ?? 'High quality commercial wholesale product.',
+                        'price' => (float) ($stock->retail_price > 0 ? $stock->retail_price : $stock->unit_cost),
+                        'stock' => (int) $stock->quantity,
+                        'moq' => (int) ($stock->min_reorder_level ?? 5),
+                        'rating' => (float) ($stock->details['rating'] ?? 4.8),
+                        'reviews' => (int) ($stock->details['reviews'] ?? 24),
+                        'warranty' => $stock->details['warranty'] ?? '3 Years Standard Warranty',
+                        'featured' => (bool) ($stock->details['featured'] ?? ($stock->id <= 10)),
+                        'best_seller' => (bool) ($stock->details['best_seller'] ?? ($stock->quantity > 80)),
+                        'new_arrival' => (bool) ($stock->details['new_arrival'] ?? false),
+                        'image' => $stock->image_url ?? $stock->image ?? 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80',
+                        'specifications' => is_array($stock->details) ? $stock->details : [],
+                        'wholesalePrices' => $wholesalePrices,
+                    ];
+                }
+
+                if (!empty($dbProducts)) {
+                    return $dbProducts;
+                }
+            }
+        } catch (\Throwable $e) {
+            // DB fallback
+        }
+
+        return static::fallbackProducts();
+    }
+
+    /**
+     * Fallback static products.
+     */
+    public static function fallbackProducts()
     {
         return [
             [
@@ -566,8 +666,8 @@ class FrontendData
             ],
             [
                 'id' => 16,
-                'sku' => 'COR-DDR4-16GB-KIT',
-                'name' => 'Kingston 16GB DDR4 3200MHz ECC SODIMM RAM',
+                'sku' => 'LEN-DDR4-16GB-ECC',
+                'name' => 'Lenovo 16GB DDR4 3200MHz ECC SODIMM RAM',
                 'brand' => 'Lenovo',
                 'brand_slug' => 'lenovo',
                 'category' => 'RAM',
@@ -846,8 +946,8 @@ class FrontendData
             ],
             [
                 'id' => 25,
-                'sku' => 'APC-SMT1500IC',
-                'name' => 'APC Smart-UPS 1500VA LCD 230V with SmartConnect',
+                'sku' => 'DELL-APC-SMT1500',
+                'name' => 'Dell APC Smart-UPS 1500VA LCD 230V with SmartConnect',
                 'brand' => 'Dell',
                 'brand_slug' => 'dell',
                 'category' => 'UPS',
@@ -1001,8 +1101,8 @@ class FrontendData
             ],
             [
                 'id' => 30,
-                'sku' => 'STG-EXOS-16TB',
-                'name' => 'Seagate Exos X16 16TB Enterprise 7200 RPM Hard Drive',
+                'sku' => 'HP-EXOS-16TB',
+                'name' => 'HP Enterprise Exos 16TB 7200 RPM Hard Drive',
                 'brand' => 'HP',
                 'brand_slug' => 'hp',
                 'category' => 'HDD',
