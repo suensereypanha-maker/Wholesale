@@ -19,7 +19,7 @@ class UserController extends Controller
     public function index(Request $request): View
     {
         $query = User::whereHas('roles', function ($q) {
-            $q->whereIn('name', ['Super Admin', 'Admin', 'Manager', 'Staff']);
+            $q->where('name', '!=', 'User');
         })->with('roles')->latest();
 
         if ($request->filled('search')) {
@@ -40,7 +40,7 @@ class UserController extends Controller
         $users = $query->paginate(10)->withQueryString();
 
         $adminQuery = User::whereHas('roles', function ($q) {
-            $q->whereIn('name', ['Super Admin', 'Admin', 'Manager', 'Staff']);
+            $q->where('name', '!=', 'User');
         });
 
         $totalUsers = (clone $adminQuery)->count();

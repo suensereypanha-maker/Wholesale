@@ -1,4 +1,7 @@
 @php
+    $user = auth()->user();
+    $isSuperAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('Super Admin');
+
     $dbMenus = \App\Models\AdminMenu::active()
         ->parents()
         ->with(['children' => function($q) {
@@ -7,7 +10,49 @@
         ->orderBy('order')
         ->get();
 
-    $navMenuGroups = $dbMenus->groupBy('section');
+    $filteredMenus = $dbMenus->filter(function($item) use ($user, $isSuperAdmin) {
+        if ($isSuperAdmin) {
+            return true;
+        }
+
+        if (!$user || !method_exists($user, 'hasPermissionTo')) {
+            return false;
+        }
+
+        $checkPermission = function($permName) use ($user) {
+            if (empty($permName)) return false;
+            if ($user->hasPermissionTo($permName)) return true;
+
+            if (str_contains($permName, 'orders') && ($user->hasPermissionTo('orders.view') || $user->hasPermissionTo('manage_orders'))) return true;
+            if (str_contains($permName, 'quotes') && ($user->hasPermissionTo('quotes.view') || $user->hasPermissionTo('manage_orders'))) return true;
+            if ((str_contains($permName, 'products') || str_contains($permName, 'categories')) && ($user->hasPermissionTo('products.view') || $user->hasPermissionTo('manage_products'))) return true;
+            if ((str_contains($permName, 'inventory') || str_contains($permName, 'stocks') || str_contains($permName, 'warehouses')) && ($user->hasPermissionTo('inventory.view') || $user->hasPermissionTo('products.view') || $user->hasPermissionTo('manage_products'))) return true;
+            if (str_contains($permName, 'customers') && ($user->hasPermissionTo('customers.view') || $user->hasPermissionTo('manage_users'))) return true;
+            if (str_contains($permName, 'users') && ($user->hasPermissionTo('users.view') || $user->hasPermissionTo('manage_users'))) return true;
+            if ((str_contains($permName, 'roles') || str_contains($permName, 'permissions')) && ($user->hasPermissionTo('roles.view') || $user->hasPermissionTo('manage_roles'))) return true;
+            if (str_contains($permName, 'reports') && ($user->hasPermissionTo('reports.view') || $user->hasPermissionTo('view_reports'))) return true;
+
+            return false;
+        };
+
+        // Filter submenus by allowed permission
+        if ($item->children && $item->children->count() > 0) {
+            $visibleChildren = $item->children->filter(function($child) use ($checkPermission) {
+                return $checkPermission($child->permission);
+            });
+
+            $item->setRelation('children', $visibleChildren);
+
+            if ($visibleChildren->count() > 0) {
+                return true;
+            }
+        }
+
+        // Check single menu item permission
+        return $checkPermission($item->permission);
+    });
+
+    $navMenuGroups = $filteredMenus->groupBy('section');
 
     $pendingCustomersCount = \App\Models\User::whereHas('roles', function ($q) {
         $q->where('name', 'User');
@@ -16,6 +61,9 @@
     })->count();
 
     $pendingQuotesCount = \Schema::hasTable('quotes') ? \App\Models\Quote::whereIn('status', ['pending', 'under_review'])->count() : 0;
+
+    $currentUserRole = $user && $user->roles->count() > 0 ? $user->roles->first()->name : 'Staff';
+    $userInitials = $user ? strtoupper(substr($user->name, 0, 2)) : 'AD';
 @endphp
 
 <!-- Sidebar Navigation Component -->
@@ -161,19 +209,22 @@
 
     <!-- Bottom User Profile Footer Card -->
     <div class="p-3 border-t border-slate-100 bg-slate-50/50">
-        <div class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-100/80 transition-colors cursor-pointer">
+        <div class="flex items-center justify-between p-2 rounded-xl hover:bg-slate-100/80 transition-colors">
             <div class="flex items-center gap-3 min-w-0">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm shadow-xs">
-                    AD
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm shadow-xs shrink-0">
+                    {{ $userInitials }}
                 </div>
                 <div class="sidebar-brand-text truncate">
-                    <p class="text-xs font-bold text-slate-900 truncate">Admin Director</p>
-                    <p class="text-[11px] text-slate-500 truncate">admin@b2bwholesale.com</p>
+                    <p class="text-xs font-bold text-slate-900 truncate">{{ auth()->user()->name ?? 'Admin User' }}</p>
+                    <p class="text-[11px] text-slate-500 truncate"><span class="font-semibold text-indigo-600">{{ $currentUserRole }}</span> • {{ auth()->user()->email ?? 'user@wholesale.com' }}</p>
                 </div>
             </div>
-            <a href="#" class="sidebar-brand-text text-slate-400 hover:text-rose-600 p-1 transition-colors" title="Logout">
-                <i class="fas fa-arrow-right-from-bracket text-sm"></i>
-            </a>
+            <form method="POST" action="{{ route('admin.logout') }}" class="inline">
+                @csrf
+                <button type="submit" class="sidebar-brand-text text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-slate-200/50 transition-colors cursor-pointer" title="Log Out">
+                    <i class="fas fa-arrow-right-from-bracket text-sm"></i>
+                </button>
+            </form>
         </div>
     </div>
 </aside>

@@ -36,6 +36,18 @@ class UserSeeder extends Seeder
                 'role'  => 'Staff',
             ],
             [
+                'email' => 'sale@wholesale.com',
+                'name'  => 'Sale Representative',
+                'role'  => 'Sale',
+                'status' => 'active',
+            ],
+            [
+                'email' => 'sales@wholesale.com',
+                'name'  => 'Sales Executive',
+                'role'  => 'Sale',
+                'status' => 'active',
+            ],
+            [
                 'email' => 'jane@pacifichardware.com',
                 'name'  => 'Jane Smith',
                 'role'  => 'User',

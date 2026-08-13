@@ -6,34 +6,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
-class Supplier extends Model
+class PaymentMethod extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'code',
         'name',
-        'company_name',
-        'email',
-        'phone',
-        'website',
-        'tax_id',
-        'category',
-        'address',
-        'city',
-        'country',
-        'payment_terms',
-        'rating',
+        'type',
+        'account_number',
+        'account_name',
         'status',
         'notes',
     ];
 
-    protected $casts = [
-        'rating' => 'integer',
-    ];
-
     /**
-     * Scope filter for active suppliers
+     * Active scope filter
      */
     public function scopeActive(Builder $query): Builder
     {
@@ -41,7 +29,7 @@ class Supplier extends Model
     }
 
     /**
-     * Scope search query for keyword matching
+     * Search scope filter
      */
     public function scopeSearch(Builder $query, ?string $search): Builder
     {
@@ -52,29 +40,34 @@ class Supplier extends Model
         return $query->where(function ($q) use ($search) {
             $q->where('name', 'like', "%{$search}%")
               ->orWhere('code', 'like', "%{$search}%")
-              ->orWhere('company_name', 'like', "%{$search}%")
-              ->orWhere('email', 'like', "%{$search}%")
-              ->orWhere('category', 'like', "%{$search}%");
+              ->orWhere('type', 'like', "%{$search}%")
+              ->orWhere('account_number', 'like', "%{$search}%")
+              ->orWhere('account_name', 'like', "%{$search}%");
         });
     }
 
     /**
-     * Relationship with Supplier Payments
+     * Type Badge Helper
      */
-    public function payments()
+    public function getTypeBadgeAttribute(): string
     {
-        return $this->hasMany(SupplierPayment::class);
+        return match ($this->type) {
+            'bank' => 'bg-blue-100 text-blue-800 border-blue-200',
+            'cash' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
+            'digital' => 'bg-purple-100 text-purple-800 border-purple-200',
+            'credit' => 'bg-amber-100 text-amber-800 border-amber-200',
+            default => 'bg-slate-100 text-slate-800 border-slate-200',
+        };
     }
 
     /**
-     * Status color utility helper
+     * Status Badge Helper
      */
     public function getStatusBadgeAttribute(): string
     {
         return match ($this->status) {
-            'active' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            'active' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
             'inactive' => 'bg-slate-100 text-slate-700 border-slate-200',
-            'pending' => 'bg-amber-50 text-amber-700 border-amber-200',
             default => 'bg-slate-100 text-slate-700 border-slate-200',
         };
     }

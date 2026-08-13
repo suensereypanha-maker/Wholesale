@@ -19,6 +19,7 @@ class Order extends Model
         'status',
         'payment_status',
         'payment_terms',
+        'payment_method',
         'subtotal',
         'discount_amount',
         'tax_amount',

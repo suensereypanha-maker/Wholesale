@@ -56,14 +56,11 @@ class AuthenticatedSessionController extends Controller
      */
     protected function getRedirectPath($user): string
     {
-        $adminRoles = ['Super Admin', 'Admin', 'Manager', 'Staff'];
-
-        if ($user->hasRole($adminRoles)) {
-            return route('admin.dashboard', absolute: false);
+        if ($user->hasRole('User') && $user->roles()->count() === 1) {
+            return route('frontend.home', absolute: false);
         }
 
-        // Default "User" role → frontend
-        return route('frontend.home', absolute: false);
+        return route('admin.dashboard', absolute: false);
     }
 }
 

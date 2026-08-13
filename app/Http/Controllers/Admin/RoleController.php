@@ -118,19 +118,17 @@ class RoleController extends Controller
      */
     public function destroy(Role $role): RedirectResponse
     {
-        // Protect critical system roles
-        $protectedRoles = ['Super Admin', 'Admin'];
+        // Protect critical core system roles
+        $protectedRoles = ['Super Admin', 'Admin', 'User'];
         if (in_array($role->name, $protectedRoles)) {
             return back()->with('error', "System core role '{$role->name}' cannot be deleted.");
         }
 
-        // Check if role is currently assigned to users
-        if ($role->users()->count() > 0) {
-            return back()->with('error', "Cannot delete role '{$role->name}' because it is assigned to {$role->users()->count()} active user(s).");
-        }
+        // Detach role from all assigned users and permissions
+        $role->users()->detach();
+        $role->permissions()->detach();
 
         $roleName = $role->name;
-        $role->permissions()->detach();
         $role->delete();
 
         return redirect()->route('admin.roles.index')

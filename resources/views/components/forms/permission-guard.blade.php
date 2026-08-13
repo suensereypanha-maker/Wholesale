@@ -11,8 +11,12 @@
         if (!$user) {
             $hasAccess = false;
         } else {
-            $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('Super Admin');
-            $hasAccess = $isSuperAdmin || (method_exists($user, 'hasPermissionTo') && $user->hasPermissionTo($permission));
+            if (method_exists($user, 'canDo')) {
+                $hasAccess = $user->canDo($permission);
+            } else {
+                $isSuperAdmin = method_exists($user, 'hasRole') && $user->hasRole('Super Admin');
+                $hasAccess = $isSuperAdmin || (method_exists($user, 'hasPermissionTo') && $user->hasPermissionTo($permission));
+            }
         }
     }
 

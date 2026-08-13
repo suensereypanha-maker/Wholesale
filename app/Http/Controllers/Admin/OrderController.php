@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Stock;
+use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -18,6 +19,10 @@ class OrderController extends Controller
      */
     public function index(Request $request): View
     {
+        if (!auth()->user()?->canDo(['orders.view', 'manage_orders'])) {
+            abort(403, 'Unauthorized access. Order viewing permission required.');
+        }
+
         $query = Order::where(function ($q) {
             $q->where('order_source', 'admin')
               ->orWhereNull('order_source');
@@ -74,13 +79,20 @@ class OrderController extends Controller
      */
     public function create(): View
     {
+        if (!auth()->user()?->canDo(['orders.create', 'manage_orders'])) {
+            abort(403, 'Unauthorized access. Order creation permission required.');
+        }
+
         $customers = Customer::where('status', 'active')->orderBy('name')->get();
         $stocks = Stock::where('quantity', '>', 0)->orderBy('product_name')->get();
 
         $nextId = (Order::max('id') ?? 0) + 1;
         $suggestedOrderNumber = 'ORD-2026-' . str_pad($nextId + 1000, 4, '0', STR_PAD_LEFT);
 
-        return view('admin.orders.create', compact('customers', 'stocks', 'suggestedOrderNumber'));
+        $dbPaymentMethods = PaymentMethod::active()->orderBy('name')->pluck('name')->toArray();
+        $paymentMethods = !empty($dbPaymentMethods) ? $dbPaymentMethods : ['Bank Transfer', 'ABA Pay / KHQR', 'Cash', 'Wire Transfer', 'Credit Line', 'Cheque'];
+
+        return view('admin.orders.create', compact('customers', 'stocks', 'suggestedOrderNumber', 'paymentMethods'));
     }
 
     /**
@@ -88,11 +100,16 @@ class OrderController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        if (!auth()->user()?->canDo(['orders.create', 'manage_orders'])) {
+            abort(403, 'Unauthorized access. Order creation permission required.');
+        }
+
         $validated = $request->validate([
             'order_number' => 'required|string|max:50|unique:orders,order_number',
             'customer_id' => 'required|exists:customers,id',
             'order_source' => 'nullable|string|in:admin,frontend',
-            'payment_terms' => 'required|string|max:100',
+            'payment_terms' => 'nullable|string|max:100',
+            'payment_method' => 'nullable|string|max:100',
             'status' => 'required|string|in:pending,processing,shipped,delivered,cancelled',
             'payment_status' => 'required|string|in:unpaid,partially_paid,paid',
             'notes' => 'nullable|string|max:1000',
@@ -149,6 +166,7 @@ class OrderController extends Controller
             'status' => $validated['status'],
             'payment_status' => $validated['payment_status'],
             'payment_terms' => $validated['payment_terms'],
+            'payment_method' => $validated['payment_method'] ?? null,
             'subtotal' => $subtotal,
             'discount_amount' => $discountAmount,
             'tax_amount' => $taxAmount,
@@ -186,6 +204,10 @@ class OrderController extends Controller
      */
     public function registeredOrders(Request $request): View
     {
+        if (!auth()->user()?->canDo(['orders.view', 'manage_orders'])) {
+            abort(403, 'Unauthorized access. Order viewing permission required.');
+        }
+
         $query = Order::where('order_source', 'frontend')->with('customer', 'items', 'user');
 
         if ($request->filled('search')) {
@@ -242,6 +264,10 @@ class OrderController extends Controller
      */
     public function show($id): View
     {
+        if (!auth()->user()?->canDo(['orders.view', 'manage_orders'])) {
+            abort(403, 'Unauthorized access. Order viewing permission required.');
+        }
+
         $order = Order::with('customer', 'items.stock', 'user')->findOrFail($id);
 
         return view('admin.orders.show', compact('order'));
@@ -252,11 +278,18 @@ class OrderController extends Controller
      */
     public function edit($id): View
     {
+        if (!auth()->user()?->canDo(['orders.edit', 'manage_orders'])) {
+            abort(403, 'Unauthorized access. Order editing permission required.');
+        }
+
         $order = Order::with('customer', 'items.stock')->findOrFail($id);
         $customers = Customer::where('status', 'active')->orderBy('name')->get();
         $stocks = Stock::orderBy('product_name')->get();
 
-        return view('admin.orders.edit', compact('order', 'customers', 'stocks'));
+        $dbPaymentMethods = PaymentMethod::active()->orderBy('name')->pluck('name')->toArray();
+        $paymentMethods = !empty($dbPaymentMethods) ? $dbPaymentMethods : ['Bank Transfer', 'ABA Pay / KHQR', 'Cash', 'Wire Transfer', 'Credit Line', 'Cheque'];
+
+        return view('admin.orders.edit', compact('order', 'customers', 'stocks', 'paymentMethods'));
     }
 
     /**
@@ -264,11 +297,16 @@ class OrderController extends Controller
      */
     public function update(Request $request, $id): RedirectResponse
     {
+        if (!auth()->user()?->canDo(['orders.edit', 'manage_orders'])) {
+            abort(403, 'Unauthorized access. Order editing permission required.');
+        }
+
         $order = Order::with('items')->findOrFail($id);
 
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'payment_terms' => 'required|string|max:100',
+            'payment_terms' => 'nullable|string|max:100',
+            'payment_method' => 'nullable|string|max:100',
             'status' => 'required|string|in:pending,processing,shipped,delivered,cancelled',
             'payment_status' => 'required|string|in:unpaid,partially_paid,paid',
             'shipping_address' => 'nullable|string|max:500',
@@ -323,6 +361,7 @@ class OrderController extends Controller
             'status' => $validated['status'],
             'payment_status' => $validated['payment_status'],
             'payment_terms' => $validated['payment_terms'],
+            'payment_method' => $validated['payment_method'] ?? null,
             'subtotal' => $subtotal,
             'discount_amount' => $discountAmount,
             'tax_amount' => $taxAmount,
@@ -344,6 +383,10 @@ class OrderController extends Controller
      */
     public function destroy($id): RedirectResponse
     {
+        if (!auth()->user()?->canDo(['orders.delete', 'manage_orders'])) {
+            abort(403, 'Unauthorized access. Order deletion permission required.');
+        }
+
         $order = Order::with('items')->findOrFail($id);
         $orderNumber = $order->order_number;
         $isFrontend = ($order->order_source === 'frontend');
@@ -368,6 +411,10 @@ class OrderController extends Controller
      */
     public function updateStatus(Request $request, $id): RedirectResponse
     {
+        if (!auth()->user()?->canDo(['orders.edit', 'manage_orders'])) {
+            abort(403, 'Unauthorized access. Order status update permission required.');
+        }
+
         $validated = $request->validate([
             'status' => 'required|string|in:pending,processing,shipped,delivered,cancelled',
             'payment_status' => 'required|string|in:unpaid,partially_paid,paid',

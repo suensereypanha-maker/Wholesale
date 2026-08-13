@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\FormComponentsController;
 use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Admin\SupplierPaymentController;
+use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\CustomersController;
 use App\Http\Controllers\Admin\CompaniesController;
 use App\Http\Controllers\Admin\CompanyDetailsController;
@@ -70,6 +72,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
     Route::resource('suppliers', SupplierController::class);
+    
+    // Supplier Payments & Payment Methods Routes
+    Route::post('supplier-payments/{supplier_payment}/pay', [SupplierPaymentController::class, 'recordPayment'])->name('supplier-payments.record-payment');
+    Route::resource('supplier-payments', SupplierPaymentController::class);
+    Route::resource('payment-methods', PaymentMethodController::class);
     Route::resource('categories', CategoryController::class);
     Route::resource('customers', CustomersController::class);
     Route::resource('companies', CompaniesController::class);
@@ -85,6 +92,7 @@ Route::middleware('auth')->group(function () {
     Route::post('stocks/in', [StockController::class, 'processStockIn'])->name('stocks.process-in');
     Route::get('stocks/out', [StockController::class, 'stockOut'])->name('stocks.out');
     Route::post('stocks/out', [StockController::class, 'processStockOut'])->name('stocks.process-out');
+    Route::get('stocks/adjustments', [StockController::class, 'adjustments'])->name('stocks.adjustments');
     Route::post('stocks/{stock}/adjust', [StockController::class, 'adjust'])->name('stocks.adjust');
     Route::resource('stocks', StockController::class);
 

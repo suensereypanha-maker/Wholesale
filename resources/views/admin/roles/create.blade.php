@@ -3,11 +3,11 @@
 @section('title', 'Create New Role')
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-5xl mx-auto space-y-6">
 
     <!-- Back Header Link -->
     <div class="flex items-center justify-between">
-        <a href="{{ route('admin.roles.index') }}" class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-violet-600 transition-colors">
+        <a href="{{ route('admin.roles.index') }}" class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors">
             <i class="fas fa-arrow-left text-xs"></i>
             <span>Back to Role List</span>
         </a>
@@ -16,18 +16,18 @@
     <!-- Form Container Card -->
     <x-forms.card 
         title="Create New System Role" 
-        description="Configure a new access role and grant granular system permissions" 
+        description="Configure a new access role and set granular CRUD permissions (Create, Read, Update, Delete)" 
         icon="fas fa-shield-plus"
         permission="manage_roles"
     >
         <x-forms.form action="{{ route('admin.roles.store') }}" method="POST">
             
             <!-- Role Details -->
-            <div class="space-y-5">
+            <div class="space-y-5 mb-6">
                 <x-forms.input 
                     name="name" 
                     label="Role Name" 
-                    placeholder="e.g. Store Manager" 
+                    placeholder="e.g. Sales Representative" 
                     icon="fas fa-user-shield" 
                     required 
                     helpText="Unique title representing security level or job function"
@@ -42,31 +42,50 @@
                 />
             </div>
 
-            <!-- Permission Selection Grid -->
-            <div class="pt-4 border-t border-slate-100">
-                <div class="mb-4">
-                    <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                        <i class="fas fa-key text-violet-500"></i>
-                        <span>Assign System Permissions</span>
-                    </h4>
-                    <p class="text-xs text-slate-500">Check permissions to include in this security role profile</p>
+            <!-- Permission Selection Matrix Grouped by Module -->
+            <div class="pt-6 border-t border-slate-100">
+                <div class="mb-5 flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            <i class="fas fa-key text-indigo-600"></i>
+                            <span>Module Access & CRUD Permissions</span>
+                        </h4>
+                        <p class="text-xs text-slate-500">Check permissions to include in this security role profile</p>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4 bg-slate-50/70 rounded-xl border border-slate-200/60">
-                    @forelse ($permissions as $permission)
-                        <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs hover:border-violet-300 transition-colors">
-                            <x-forms.checkbox 
-                                name="permissions[]" 
-                                value="{{ $permission->id }}" 
-                                label="{{ $permission->name }}" 
-                                description="{{ $permission->description }}"
-                            />
+                @php
+                    $groupedPermissions = $permissions->groupBy(function($p) {
+                        return $p->module ?? 'General System';
+                    });
+                @endphp
+
+                <div class="space-y-5">
+                    @foreach ($groupedPermissions as $moduleName => $modulePermissions)
+                        <div class="bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden">
+                            <div class="px-4 py-3 bg-slate-50/80 border-b border-slate-200/60 flex items-center justify-between">
+                                <h5 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                                    <i class="fas fa-layer-group text-indigo-500"></i>
+                                    <span>{{ $moduleName }}</span>
+                                </h5>
+                                <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-200/60 text-slate-600">
+                                    {{ $modulePermissions->count() }} Actions
+                                </span>
+                            </div>
+                            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                @foreach ($modulePermissions as $permission)
+                                    <div class="p-3 rounded-lg border border-slate-200/70 hover:border-indigo-300 hover:bg-slate-50 transition-all">
+                                        <x-forms.checkbox 
+                                            name="permissions[]" 
+                                            value="{{ $permission->id }}" 
+                                            label="{{ $permission->action }}" 
+                                            description="{{ $permission->description }}"
+                                        />
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
-                    @empty
-                        <div class="col-span-full py-4 text-center text-xs text-slate-400">
-                            No permissions registered in the system.
-                        </div>
-                    @endforelse
+                    @endforeach
                 </div>
             </div>
 
@@ -76,7 +95,7 @@
                     Cancel
                 </x-forms.button>
 
-                <x-forms.button type="submit" variant="primary" icon="fas fa-check" class="!bg-violet-600 hover:!bg-violet-700">
+                <x-forms.button type="submit" variant="primary" icon="fas fa-check" class="!bg-indigo-600 hover:!bg-indigo-700">
                     Create Role Profile
                 </x-forms.button>
             </x-slot:footer>

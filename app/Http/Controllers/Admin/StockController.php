@@ -73,6 +73,10 @@ class StockController extends Controller
      */
     public function create(): View
     {
+        if (!auth()->user()?->canDo(['products.create', 'inventory.create', 'manage_products'])) {
+            abort(403, 'Unauthorized action. Admin permission required to create stock/product items.');
+        }
+
         $warehouses = Warehouse::where('status', 'active')->orderBy('name')->get();
         $categories = Category::where('status', 'active')->pluck('name')->toArray();
         if (empty($categories)) {
@@ -93,11 +97,11 @@ class StockController extends Controller
     /**
      * Store a newly created stock item in storage.
      */
-    /**
-     * Store a newly created stock item in storage.
-     */
     public function store(Request $request): RedirectResponse
     {
+        if (!auth()->user()?->canDo(['products.create', 'inventory.create', 'manage_products'])) {
+            abort(403, 'Unauthorized action. Admin permission required to create stock/product items.');
+        }
         $validated = $request->validate([
             'warehouse_id' => 'required|exists:warehouses,id',
             'sku' => 'required|string|max:100',
@@ -218,6 +222,10 @@ class StockController extends Controller
      */
     public function edit(Stock $stock): View
     {
+        if (!auth()->user()?->canDo(['products.edit', 'inventory.edit', 'manage_products'])) {
+            abort(403, 'Unauthorized action. Admin permission required to edit stock/product items.');
+        }
+
         $warehouses = Warehouse::where('status', 'active')->orderBy('name')->get();
         $categories = Category::where('status', 'active')->pluck('name')->toArray();
         if (empty($categories)) {
@@ -240,6 +248,10 @@ class StockController extends Controller
      */
     public function update(Request $request, Stock $stock): RedirectResponse
     {
+        if (!auth()->user()?->canDo(['products.edit', 'inventory.edit', 'manage_products'])) {
+            abort(403, 'Unauthorized action. Admin permission required to edit stock/product items.');
+        }
+
         $validated = $request->validate([
             'warehouse_id' => 'required|exists:warehouses,id',
             'sku' => 'required|string|max:100',
@@ -350,6 +362,10 @@ class StockController extends Controller
      */
     public function adjust(Request $request, Stock $stock): RedirectResponse
     {
+        if (!auth()->user()?->canDo(['products.edit', 'inventory.edit', 'manage_products'])) {
+            abort(403, 'Unauthorized action. Admin permission required to adjust stock items.');
+        }
+
         $validated = $request->validate([
             'adjustment_type' => 'required|in:add,subtract,set',
             'adjustment_amount' => 'required|integer|min:1',
@@ -387,10 +403,65 @@ class StockController extends Controller
     }
 
     /**
+     * Display Stock Adjustments Management.
+     */
+    public function adjustments(Request $request): View
+    {
+        $query = Stock::with('warehouse');
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('product_name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhere('category', 'like', "%{$search}%")
+                  ->orWhere('rack_location', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('warehouse_id')) {
+            $query->where('warehouse_id', $request->input('warehouse_id'));
+        }
+
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+            if ($status === 'low_stock') {
+                $query->lowStock();
+            } elseif ($status === 'out_of_stock') {
+                $query->outOfStock();
+            } else {
+                $query->where('status', $status);
+            }
+        }
+
+        $stocks = $query->latest()->get();
+        $warehouses = Warehouse::where('status', 'active')->orderBy('name')->get();
+
+        // Key inventory & adjustment metrics
+        $totalItems = Stock::count();
+        $totalQuantity = Stock::sum('quantity');
+        $lowStockCount = Stock::lowStock()->count() + Stock::outOfStock()->count();
+        $totalValuation = Stock::all()->sum(fn($s) => $s->quantity * $s->unit_cost);
+
+        return view('admin.stocks.adjustments', compact(
+            'stocks',
+            'warehouses',
+            'totalItems',
+            'totalQuantity',
+            'lowStockCount',
+            'totalValuation'
+        ));
+    }
+
+    /**
      * Remove the specified stock item from storage.
      */
     public function destroy(Stock $stock): RedirectResponse
     {
+        if (!auth()->user()?->canDo(['products.delete', 'inventory.delete', 'manage_products'])) {
+            abort(403, 'Unauthorized action. Admin permission required to delete stock/product items.');
+        }
+
         $name = $stock->product_name;
         $stock->delete();
 

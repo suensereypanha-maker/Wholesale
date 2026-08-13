@@ -19,14 +19,16 @@
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <x-forms.button 
-                href="{{ route('admin.stocks.create') }}" 
-                variant="primary" 
-                icon="fas fa-plus"
-                class="!bg-emerald-600 hover:!bg-emerald-700"
-            >
-                Add Inventory Item
-            </x-forms.button>
+            @if(auth()->user()?->canDo(['products.create', 'inventory.create', 'manage_products']))
+                <x-forms.button 
+                    href="{{ route('admin.stocks.create') }}" 
+                    variant="primary" 
+                    icon="fas fa-plus"
+                    class="!bg-emerald-600 hover:!bg-emerald-700"
+                >
+                    Add Inventory Item
+                </x-forms.button>
+            @endif
         </div>
     </div>
 
@@ -256,15 +258,17 @@
                             <!-- Actions -->
                             <td class="px-5 py-4 text-center">
                                 <div class="flex items-center justify-center gap-1">
-                                    <!-- Quick Adjust Button -->
-                                    <button 
-                                        type="button" 
-                                        @click="adjustModalOpen = true; activeStock = {{ json_encode($stock) }}"
-                                        class="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors"
-                                        title="Quick Stock Adjustment"
-                                    >
-                                        <i class="fas fa-sliders text-xs"></i>
-                                    </button>
+                                    @if(auth()->user()?->canDo(['products.edit', 'inventory.edit', 'manage_products']))
+                                        <!-- Quick Adjust Button -->
+                                        <button 
+                                            type="button" 
+                                            @click="adjustModalOpen = true; activeStock = {{ json_encode($stock) }}"
+                                            class="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors"
+                                            title="Quick Stock Adjustment"
+                                        >
+                                            <i class="fas fa-sliders text-xs"></i>
+                                        </button>
+                                    @endif
 
                                     <!-- View Details -->
                                     <x-forms.button 
@@ -275,31 +279,35 @@
                                         title="View Stock Details" 
                                     />
 
-                                    <!-- Edit Stock -->
-                                    <x-forms.button 
-                                        href="{{ route('admin.stocks.edit', $stock) }}" 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        icon="fas fa-pen-to-square"
-                                        title="Edit Stock Item" 
-                                    />
-
-                                    <!-- Delete Stock -->
-                                    <x-forms.form 
-                                        action="{{ route('admin.stocks.destroy', $stock) }}" 
-                                        method="DELETE" 
-                                        class="inline-block !space-y-0"
-                                        onsubmit="return confirm('Are you sure you want to delete stock item {{ $stock->product_name }}?');"
-                                    >
+                                    @if(auth()->user()?->canDo(['products.edit', 'inventory.edit', 'manage_products']))
+                                        <!-- Edit Stock -->
                                         <x-forms.button 
-                                            type="submit" 
+                                            href="{{ route('admin.stocks.edit', $stock) }}" 
                                             variant="ghost" 
                                             size="sm" 
-                                            icon="fas fa-trash-can" 
-                                            class="text-rose-500 hover:text-rose-700 hover:bg-rose-50"
-                                            title="Delete Stock Item"
+                                            icon="fas fa-pen-to-square"
+                                            title="Edit Stock Item" 
                                         />
-                                    </x-forms.form>
+                                    @endif
+
+                                    @if(auth()->user()?->canDo(['products.delete', 'inventory.delete', 'manage_products']))
+                                        <!-- Delete Stock -->
+                                        <x-forms.form 
+                                            action="{{ route('admin.stocks.destroy', $stock) }}" 
+                                            method="DELETE" 
+                                            class="inline-block !space-y-0"
+                                            onsubmit="return confirm('Are you sure you want to delete stock item {{ $stock->product_name }}?');"
+                                        >
+                                            <x-forms.button 
+                                                type="submit" 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                icon="fas fa-trash-can" 
+                                                class="text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                                                title="Delete Stock Item"
+                                            />
+                                        </x-forms.form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

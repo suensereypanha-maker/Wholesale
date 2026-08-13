@@ -95,10 +95,33 @@ trait HasRoles
      */
     public function hasPermissionTo(string|Permission $permission): bool
     {
+        if ($this->hasRole('Super Admin')) {
+            return true;
+        }
+
         $permissionName = $permission instanceof Permission ? $permission->name : $permission;
 
         foreach ($this->roles as $role) {
             if ($role->hasPermissionTo($permissionName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if user has any of the given permissions.
+     */
+    public function canDo(string|array $permissions): bool
+    {
+        if ($this->hasRole('Super Admin')) {
+            return true;
+        }
+
+        $permissionList = (array) $permissions;
+        foreach ($permissionList as $perm) {
+            if ($this->hasPermissionTo($perm)) {
                 return true;
             }
         }

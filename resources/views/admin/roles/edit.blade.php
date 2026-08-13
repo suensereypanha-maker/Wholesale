@@ -3,11 +3,11 @@
 @section('title', 'Edit Role - ' . $role->name)
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-5xl mx-auto space-y-6">
 
     <!-- Back Header Link -->
     <div class="flex items-center justify-between">
-        <a href="{{ route('admin.roles.index') }}" class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-violet-600 transition-colors">
+        <a href="{{ route('admin.roles.index') }}" class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors">
             <i class="fas fa-arrow-left text-xs"></i>
             <span>Back to Role List</span>
         </a>
@@ -15,15 +15,15 @@
 
     <!-- Form Container Card -->
     <x-forms.card 
-        title="Edit Security Role" 
-        description="Update role settings and manage permission assignments for {{ $role->name }}" 
+        title="Edit Security Role & Permissions" 
+        description="Configure granular CRUD permissions (Create, Read, Update, Delete) for {{ $role->name }}" 
         icon="fas fa-user-pen"
         permission="manage_roles"
     >
         <x-forms.form action="{{ route('admin.roles.update', $role) }}" method="PUT">
             
             <!-- Role Details -->
-            <div class="space-y-5">
+            <div class="space-y-5 mb-6">
                 <x-forms.input 
                     name="name" 
                     label="Role Name" 
@@ -44,34 +44,60 @@
                 />
             </div>
 
-            <!-- Permission Selection Grid -->
-            <div class="pt-4 border-t border-slate-100">
-                <div class="mb-4 flex items-center justify-between">
+            <!-- Permission Selection Matrix Grouped by Module -->
+            <div class="pt-6 border-t border-slate-100">
+                <div class="mb-5 flex items-center justify-between">
                     <div>
                         <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                            <i class="fas fa-key text-violet-500"></i>
-                            <span>Assigned Permissions</span>
+                            <i class="fas fa-key text-indigo-600"></i>
+                            <span>Module Access & CRUD Permissions</span>
                         </h4>
-                        <p class="text-xs text-slate-500">Select or deselect system capabilities for this role</p>
+                        <p class="text-xs text-slate-500">Check or uncheck individual Create, Read, Update, Delete capabilities allowed by Admin</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4 bg-slate-50/70 rounded-xl border border-slate-200/60">
-                    @forelse ($permissions as $permission)
-                        <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs hover:border-violet-300 transition-colors">
-                            <x-forms.checkbox 
-                                name="permissions[]" 
-                                value="{{ $permission->id }}" 
-                                label="{{ $permission->name }}" 
-                                description="{{ $permission->description }}"
-                                :checked="in_array($permission->id, old('permissions', $assignedPermissionIds))"
-                            />
+                @php
+                    $groupedPermissions = $permissions->groupBy(function($p) {
+                        return $p->module ?? 'General System';
+                    });
+                @endphp
+
+                <div class="space-y-5">
+                    @foreach ($groupedPermissions as $moduleName => $modulePermissions)
+                        <div class="bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden">
+                            <div class="px-4 py-3 bg-slate-50/80 border-b border-slate-200/60 flex items-center justify-between">
+                                <h5 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                                    <i class="fas fa-layer-group text-indigo-500"></i>
+                                    <span>{{ $moduleName }}</span>
+                                </h5>
+                                <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-200/60 text-slate-600">
+                                    {{ $modulePermissions->count() }} Actions
+                                </span>
+                            </div>
+                            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                @foreach ($modulePermissions as $permission)
+                                    @php
+                                        $badgeColor = match(true) {
+                                            str_contains($permission->name, '.view') || str_starts_with($permission->name, 'view_') => 'bg-emerald-50 border-emerald-200 text-emerald-700',
+                                            str_contains($permission->name, '.create') => 'bg-blue-50 border-blue-200 text-blue-700',
+                                            str_contains($permission->name, '.edit') => 'bg-amber-50 border-amber-200 text-amber-700',
+                                            str_contains($permission->name, '.delete') => 'bg-rose-50 border-rose-200 text-rose-700',
+                                            default => 'bg-indigo-50 border-indigo-200 text-indigo-700',
+                                        };
+                                    @endphp
+                                    <div class="p-3 rounded-lg border border-slate-200/70 hover:border-indigo-300 hover:bg-slate-50 transition-all">
+                                        <x-forms.checkbox 
+                                            name="permissions[]" 
+                                            value="{{ $permission->id }}" 
+                                            label="{{ $permission->action }}" 
+                                            description="{{ $permission->description }}"
+                                            :checked="in_array($permission->id, old('permissions', $assignedPermissionIds))"
+                                        />
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
-                    @empty
-                        <div class="col-span-full py-4 text-center text-xs text-slate-400">
-                            No permissions registered in the system.
-                        </div>
-                    @endforelse
+                    @endforeach
                 </div>
             </div>
 
@@ -81,7 +107,7 @@
                     Cancel
                 </x-forms.button>
 
-                <x-forms.button type="submit" variant="primary" icon="fas fa-floppy-disk" class="!bg-violet-600 hover:!bg-violet-700">
+                <x-forms.button type="submit" variant="primary" icon="fas fa-floppy-disk" class="!bg-indigo-600 hover:!bg-indigo-700">
                     Save Role Changes
                 </x-forms.button>
             </x-slot:footer>
